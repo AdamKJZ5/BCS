@@ -1,3 +1,16 @@
+export const SPAM_ERROR = "SPAM_DETECTED";
+
+// Sanitize input to prevent XSS attacks
+export function sanitizeInput(input: string): string {
+  if (typeof input !== "string") return "";
+
+  return input
+    .trim()
+    .replace(/[<>]/g, "") // Remove angle brackets to prevent HTML injection
+    .replace(/javascript:/gi, "") // Remove javascript: protocol
+    .replace(/on\w+=/gi, ""); // Remove event handlers like onclick=
+}
+
 export function validateLead(data: any): string | null {
   const { name, email, phone, message, company } = data;
 

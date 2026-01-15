@@ -18,7 +18,7 @@ const leadSchema = new Schema<ILead>({
   phone: { type: String, required: true },
   message: { type: String, required: true },
   damageDescription: { type:String },
-  photos: [String]
+  photos: [String],
   ipAddress: String,
   userAgent: String,
   createdAt: { type: Date, default: Date.now },

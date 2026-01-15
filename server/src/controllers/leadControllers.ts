@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import Lead from "../models/Lead";
 import { sendLeadEmailSafe, sendAutoReplySafe } from "../utils/email";
-import { validateLead, SPAM_ERROR } from "../validators/leadValidator";
+import { validateLead, SPAM_ERROR, sanitizeInput } from "../validators/leadValidators";
 
 export const createLead = async (req: Request, res: Response) => {
   try {
@@ -14,7 +14,14 @@ export const createLead = async (req: Request, res: Response) => {
       return res.status(400).json({ message: error });
     }
 
-    const { name, email, phone, message } = req.body;
+    const { name, email, phone, message, damageDescription } = req.body;
+
+    // Sanitize all text inputs to prevent XSS
+    const sanitizedName = sanitizeInput(name);
+    const sanitizedEmail = sanitizeInput(email);
+    const sanitizedPhone = sanitizeInput(phone);
+    const sanitizedMessage = sanitizeInput(message);
+    const sanitizedDamageDescription = damageDescription ? sanitizeInput(damageDescription) : undefined;
 
     const forwarded = req.headers["x-forwarded-for"];
     const ipAddress =
@@ -23,22 +30,29 @@ export const createLead = async (req: Request, res: Response) => {
         : req.socket.remoteAddress;
 
     const userAgent = req.headers["user-agent"];
-  
+
     const photos = req.files ? (req.files as Express.Multer.File[]).map(file => file.filename) : [];
     await Lead.create({
-      name,
-      email,
-      phone,
-      message,
-      damageDescription,
+      name: sanitizedName,
+      email: sanitizedEmail,
+      phone: sanitizedPhone,
+      message: sanitizedMessage,
+      damageDescription: sanitizedDamageDescription,
       photos,
       ipAddress,
       userAgent
     });
 
     // Fire-and-forget safe emails
-    void sendLeadEmailSafe({ name, email, phone, message, damageDescription, photos });
-    void sendAutoReplySafe(email, name);
+    void sendLeadEmailSafe({
+      name: sanitizedName,
+      email: sanitizedEmail,
+      phone: sanitizedPhone,
+      message: sanitizedMessage,
+      damageDescription: sanitizedDamageDescription,
+      photos
+    });
+    void sendAutoReplySafe(sanitizedEmail, sanitizedName);
 
     return res.status(201).json({ message: "Lead submitted successfully" });
 
