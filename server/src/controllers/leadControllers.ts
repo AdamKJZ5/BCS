@@ -1,24 +1,46 @@
-import { validateLead } from "../validators/leadValidator";
+import { Request, Response } from "express";
+import Lead from "../models/Lead";
+import { sendLeadEmailSafe, sendAutoReplySafe } from "../utils/email";
+import { validateLead, SPAM_ERROR } from "../validators/leadValidator";
 
 export const createLead = async (req: Request, res: Response) => {
   try {
-
     const error = validateLead(req.body);
-    
+
     if (error) {
-      
-      if (error === "Spam detected."){
+      if (error === SPAM_ERROR) {
         return res.status(200).json({ message: "Lead submitted" });
       }
-      
       return res.status(400).json({ message: error });
     }
 
-    const lead = await Lead.create(req.body);
-    await sendLeadEmail(req.body);
+    const { name, email, phone, message } = req.body;
 
-    res.status(201).json({ message: "Lead submitted successfully" });
+    const forwarded = req.headers["x-forwarded-for"];
+    const ipAddress =
+      typeof forwarded === "string"
+        ? forwarded.split(",")[0]
+        : req.socket.remoteAddress;
+
+    const userAgent = req.headers["user-agent"];
+
+    await Lead.create({
+      name,
+      email,
+      phone,
+      message,
+      ipAddress,
+      userAgent
+    });
+
+    // Fire-and-forget safe emails
+    void sendLeadEmailSafe({ name, email, phone, message });
+    void sendAutoReplySafe(email, name);
+
+    return res.status(201).json({ message: "Lead submitted successfully" });
+
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    console.error("Create lead error:", err);
+    return res.status(500).json({ message: "Server error" });
   }
 };
