@@ -33,6 +33,12 @@ Phone: ${phone}
 
 Message: 
 ${message}
+
+Damage Description:
+${damageDescription || "N/A"}
+
+Photos:
+${data.photos && data.photos.length ? data.photos.join(", ") : "No photos uploaded"}
   `
     });
   } catch (err) {

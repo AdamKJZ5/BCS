@@ -23,18 +23,21 @@ export const createLead = async (req: Request, res: Response) => {
         : req.socket.remoteAddress;
 
     const userAgent = req.headers["user-agent"];
-
+  
+    const photos = req.files ? (req.files as Express.Multer.File[]).map(file => file.filename) : [];
     await Lead.create({
       name,
       email,
       phone,
       message,
+      damageDescription,
+      photos,
       ipAddress,
       userAgent
     });
 
     // Fire-and-forget safe emails
-    void sendLeadEmailSafe({ name, email, phone, message });
+    void sendLeadEmailSafe({ name, email, phone, message, damageDescription, photos });
     void sendAutoReplySafe(email, name);
 
     return res.status(201).json({ message: "Lead submitted successfully" });
