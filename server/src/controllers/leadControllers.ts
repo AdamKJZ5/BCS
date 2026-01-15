@@ -1,21 +1,17 @@
-import Lead from "../models/Lead";
-import { sendLeadEmail } from "../utils/email";
-import { Request, Response } from "express";
+import { validateLead } from "../validators/leadValidator";
 
 export const createLead = async (req: Request, res: Response) => {
   try {
-    const { name, email, phone, message } = req.body;
-
-    if (!name || !email || !phone || !message) {
-      return res.status(400).json({ message: "All fields are required" });
+    const error = validateLead(req.body);
+    if (error) {
+      return res.status(400).json({ message: error });
     }
 
-    const lead = await Lead.create({ name, email, phone, message });
-    await sendLeadEmail({ name, email, phone, message });
+    const lead = await Lead.create(req.body);
+    await sendLeadEmail(req.body);
 
-    res.status(201).json({ message: "Lead created", lead });
-  } catch (error) {
-    console.error(error);
+    res.status(201).json({ message: "Lead submitted successfully" });
+  } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
 };
