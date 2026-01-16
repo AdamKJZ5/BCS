@@ -14,3 +14,7 @@ pnpm-debug.log*
 
 # OS
 .DS_Store
+
+# Uploads
+server/uploads/*
+!server/uploads/.gitkeep
