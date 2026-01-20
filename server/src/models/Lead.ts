@@ -22,6 +22,18 @@ const leadSchema = new Schema<ILead>({
   ipAddress: String,
   userAgent: String,
   createdAt: { type: Date, default: Date.now },
+  archived: {
+    type: boolean,
+    default: false,
+  },
+  archivedAt: {
+    type: Date,
+  },
+  status: {
+    type: String,
+    enum:["new", "contacted", "closed"]
+    default: "new",
+  },
 });
 
 export default model<ILead>("Lead", leadSchema);

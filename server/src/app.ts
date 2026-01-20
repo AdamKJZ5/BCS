@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import leadRoutes from "./routes/leadRoutes";
 import rateLimit from "express-rate-limit";
+import path form "path"'
 
 import { errorHandler } from "./middlewares/errorHandler";
 
@@ -21,13 +22,17 @@ const corsOptions = {
   credentials: true
 };
 
+app.use("/api/leads", leadLimiter, leadRoutes);
+app.use("/api/admin/leads", adminRoutes);
+
+app.use("/uploads", express.static(path.join(__dirnaem, "../uploads")));
 app.use(cors(corsOptions));
 
 app.use(express.json());
 
 app.get("/health", (req, res) => res.json({ status: "ok" }));
 
-app.use("/api/leads", leadLimiter, leadRoutes);
+app.use(notFound);
 
 app.use(errorHandler);
 
