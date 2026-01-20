@@ -52,10 +52,10 @@ export const createLead = async (
       email: sanitizedEmail,
       phone: sanitizedPhone,
       message: sanitizedMessage,
-      damageDescription: sanitizedDamageDescription,
+      ...(sanitizedDamageDescription !== undefined && { damageDescription: sanitizedDamageDescription }),
       photos,
-      ipAddress,
-      userAgent
+      ...(ipAddress !== undefined && { ipAddress }),
+      ...(userAgent !== undefined && { userAgent })
     });
   } catch (err) {
     // Database failure = server error
@@ -68,7 +68,7 @@ export const createLead = async (
     email: sanitizedEmail,
     phone: sanitizedPhone,
     message: sanitizedMessage,
-    damageDescription: sanitizedDamageDescription,
+    ...(sanitizedDamageDescription !== undefined && { damageDescription: sanitizedDamageDescription }),
     photos
   });
 

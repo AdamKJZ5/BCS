@@ -10,6 +10,9 @@ interface ILead {
   ipAddress?: string;
   userAgent?: string;
   createdAt?: Date;
+  archived?: boolean;
+  archivedAt?: Date;
+  status?: "new" | "contacted" | "closed";
 }
 
 const leadSchema = new Schema<ILead>({
@@ -23,7 +26,7 @@ const leadSchema = new Schema<ILead>({
   userAgent: String,
   createdAt: { type: Date, default: Date.now },
   archived: {
-    type: boolean,
+    type: Boolean,
     default: false,
   },
   archivedAt: {
@@ -31,7 +34,7 @@ const leadSchema = new Schema<ILead>({
   },
   status: {
     type: String,
-    enum:["new", "contacted", "closed"]
+    enum:["new", "contacted", "closed"],
     default: "new",
   },
 });

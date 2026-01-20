@@ -1,12 +1,10 @@
 import express from "express";
 import cors from "cors";
 import leadRoutes from "./routes/leadRoutes";
-import errorHandler from "./middleware/errorhandler";
 import rateLimit from "express-rate-limit";
-import path form "path";
-import adminRoutes from "./routes/adminRoutes";
+import path from "path";
+import adminRoutes from "./routes/leadAdminRoutes";
 import { notFound } from "./middlewares/notFound";
-
 import { errorHandler } from "./middlewares/errorHandler";
 
 const leadLimiter = rateLimit({
@@ -30,7 +28,7 @@ app.use(errorHandler);
 app.use("/api/leads", leadLimiter, leadRoutes);
 app.use("/api/admin/leads", adminRoutes);
 
-app.use("/uploads", express.static(path.join(__dirnaem, "../uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use(cors(corsOptions));
 
 app.use(express.json());

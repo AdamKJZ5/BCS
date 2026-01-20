@@ -44,10 +44,21 @@ export const getAllLeads = async (req: Request, res: Response) => {
   // 3️⃣ Convert photo filenames into public URLs
   const formattedLeads = leads.map((lead) => ({
     ...lead,
-    photos: lead.photos.map(
+    photos: lead.photos?.map(
       (photo) => `${process.env.BASE_URL}/uploads/${photo}`
-    ),
+    ) || [],
   }));
+
+  // 4️⃣ Send frontend-ready response
+  res.json({
+    data: formattedLeads,
+    pagination: {
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+    },
+  });
+};
 
 export const updateLeadStatus = async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -68,15 +79,4 @@ export const updateLeadStatus = async (req: Request, res: Response) => {
   await lead.save();
 
   res.json({ message: "Lead status updated" });
-};
-
-  // 4️⃣ Send frontend-ready response
-  res.json({
-    data: formattedLeads,
-    pagination: {
-      total,
-      page,
-      pages: Math.ceil(total / limit),
-    },
-  });
 };
