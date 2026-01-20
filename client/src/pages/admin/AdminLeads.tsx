@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchLeads } from "../../api/adminLeads";
+import { fetchLeads, updateLeadStatus } from "../../api/adminLeads";
 
 export default function AdminLeads() {
   const [leads, setLeads] = useState<any[]>([]);
@@ -20,15 +20,42 @@ export default function AdminLeads() {
 
   if (loading) return <p>Loading leads...</p>;
 
+function handleStatusChange(id: string, newStatus: "new" | "contacted" | "closed") {
+  updateLeadStatus(id, newStatus)
+    .then(() => {
+      setLeads((prev) =>
+        prev.map((lead) =>
+          lead._id === id ? { ...lead, status: newStatus } : lead
+        )
+      );
+    })
+    .catch(() => {
+      alert("Failed to update status");
+    });
+}
+
   return (
     <div>
       <h1>Admin Leads</h1>
 
       {leads.map((lead) => (
         <div key={lead._id} style={{ borderBottom: "1px solid #ccc" }}>
-          <p><strong>{lead.name}</strong></p>
-          <p>{lead.email}</p>
-          <p>Status: {lead.status}</p>
+          <p>
+            Status:{" "}
+            <select
+              value={lead.status}
+              onChange={(e) =>
+                handleStatusChange(
+                  lead._id,
+                  e.target.value as "new" | "contacted" | "closed"
+                )
+              }
+            >
+              <option value="new">New</option>
+              <option value="contacted">Contacted</option>
+              <option value="closed">Closed</option>
+            </select>
+          </p> 
         </div>
       ))}
 

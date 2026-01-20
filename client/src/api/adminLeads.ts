@@ -36,8 +36,10 @@ export async function updateLeadStatus(
   );
 
   if (!res.ok) {
-    throw new Error("Failed to update status");
+    throw new Error("Failed to update lead status");
   }
+
+  return res.json();
 }
 
 export async function archiveLead(id: string) {
