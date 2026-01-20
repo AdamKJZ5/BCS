@@ -1,59 +1,133 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+import { useEffect, useState } from "react";
+import {
+  fetchLeads,
+  updateLeadStatus,
+  archiveLead,
+} from "../../api/adminLeads";
 
-const ADMIN_KEY = import.meta.env.VITE_ADMIN_API_KEY;
+type Lead = {
+  _id: string;
+  name: string;
+  email: string;
+  status: "new" | "contacted" | "closed";
+  photos: string[];
+};
 
-export async function fetchLeads(page = 1, limit = 10) {
-  const res = await fetch(
-    `${API_BASE}/api/admin/leads?page=${page}&limit=${limit}`,
-    {
-      headers: {
-        "x-api-key": ADMIN_KEY,
-      },
-    }
-  );
+export default function AdminLeads() {
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
+  const [loading, setLoading] = useState(true);
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch leads");
+  // Fetch leads when page changes
+  useEffect(() => {
+    setLoading(true);
+
+    fetchLeads(page, 10)
+      .then((res) => {
+        setLeads(res.data);
+        setPages(res.pagination.pages);
+      })
+      .catch(() => {
+        alert("Failed to load leads");
+      })
+      .finally(() => setLoading(false));
+  }, [page]);
+
+  // Update lead status
+  function handleStatusChange(
+    id: string,
+    newStatus: "new" | "contacted" | "closed"
+  ) {
+    updateLeadStatus(id, newStatus)
+      .then(() => {
+        setLeads((prev) =>
+          prev.map((lead) =>
+            lead._id === id ? { ...lead, status: newStatus } : lead
+          )
+        );
+      })
+      .catch(() => {
+        alert("Failed to update status");
+      });
   }
 
-  return res.json();
-}
+  // Archive lead
+  function handleArchive(id: string) {
+    const confirmed = window.confirm(
+      "Are you sure you want to archive this lead?"
+    );
 
-export async function updateLeadStatus(
-  id: string,
-  status: "new" | "contacted" | "closed"
-) {
-  const res = await fetch(
-    `${API_BASE}/api/admin/leads/${id}/status`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": ADMIN_KEY,
-      },
-      body: JSON.stringify({ status }),
-    }
-  );
+    if (!confirmed) return;
 
-  if (!res.ok) {
-    throw new Error("Failed to update lead status");
+    archiveLead(id)
+      .then(() => {
+        setLeads((prev) => prev.filter((lead) => lead._id !== id));
+      })
+      .catch(() => {
+        alert("Failed to archive lead");
+      });
   }
 
-  return res.json();
-}
+  if (loading) return <p>Loading leads...</p>;
 
-export async function archiveLead(id: string) {
-  const res = await fetch(
-    `${API_BASE}/api/admin/leads/${id}`,
-    {
-      method: "DELETE",
-      headers: {
-        "x-api-key": ADMIN_KEY,
-      },
-    }
+  return (
+    <div>
+      <h1>Admin Leads</h1>
+
+      {leads.map((lead) => (
+        <div
+          key={lead._id}
+          style={{
+            borderBottom: "1px solid #ccc",
+            paddingBottom: "1rem",
+            marginBottom: "1rem",
+          }}
+        >
+          <p>
+            <strong>{lead.name}</strong>
+          </p>
+          <p>{lead.email}</p>
+
+          <p>
+            Status:{" "}
+            <select
+              value={lead.status}
+              onChange={(e) =>
+                handleStatusChange(
+                  lead._id,
+                  e.target.value as "new" | "contacted" | "closed"
+                )
+              }
+            >
+              <option value="new">New</option>
+              <option value="contacted">Contacted</option>
+              <option value="closed">Closed</option>
+            </select>
+          </p>
+
+          <button
+            onClick={() => handleArchive(lead._id)}
+            style={{ color: "red" }}
+          >
+            Archive
+          </button>
+        </div>
+      ))}
+
+      <div style={{ marginTop: "1rem" }}>
+        <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+          Prev
+        </button>
+
+        <span style={{ margin: "0 1rem" }}>
+          Page {page} of {pages}
+        </span>
+
+        <button disabled={page >= pages} onClick={() => setPage((p) => p + 1)}>
+          Next
+        </button>
+      </div>
+    </div>
   );
-
-  if (!res.ok) {
-    throw new Error("Failed to archive lead");
-  }
 }
