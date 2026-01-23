@@ -18,24 +18,24 @@ const app = express();
 // CORS configuration - restrict to specific domain in production
 const corsOptions = {
   origin: process.env.CORS_ORIGIN || "*",
-  methods: ["GET", "POST"],
-  allowedHeaders: ["Content-Type"],
+  methods: ["GET", "POST", "PATCH", "DELETE"],
+  allowedHeaders: ["Content-Type", "x-api-key"],
   credentials: true
 };
 
-app.use(errorHandler);
+// Middleware must be in correct order
+app.use(cors(corsOptions));
+app.use(express.json());
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
+// Routes
+app.get("/health", (req, res) => res.json({ status: "ok" }));
 app.use("/api/leads", leadLimiter, leadRoutes);
 app.use("/api/admin/leads", adminRoutes);
 
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
-app.use(cors(corsOptions));
-
-app.use(express.json());
-
-app.get("/health", (req, res) => res.json({ status: "ok" }));
-
+// Error handlers must be last
 app.use(notFound);
+app.use(errorHandler);
 
 
 export default app;
