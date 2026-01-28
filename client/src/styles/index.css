@@ -1,0 +1,72 @@
+/* Global styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #333;
+  background-color: #fff;
+}
+
+/* Improve text rendering */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+p {
+  line-height: 1.6;
+}
+
+/* Smooth focus states */
+*:focus {
+  outline: 2px solid #0047AB;
+  outline-offset: 2px;
+}
+
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Remove default button styles */
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Selection color */
+::selection {
+  background-color: #0047AB;
+  color: #fff;
+}
+
+/* Scrollbar styling (webkit browsers) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

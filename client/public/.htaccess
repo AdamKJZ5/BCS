@@ -1,0 +1,54 @@
+# Apache .htaccess for Bellevue Collision Services
+
+# Enable Rewrite Engine
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Force HTTPS (if SSL certificate is available)
+  # RewriteCond %{HTTPS} off
+  # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # Force WWW (optional)
+  # RewriteCond %{HTTP_HOST} !^www\. [NC]
+  # RewriteRule ^(.*)$ http://www.%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # Single Page Application - Route all requests to index.html
+  RewriteBase /
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
+
+# Compression for better performance
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+# Browser Caching
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/jpg "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/gif "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+  ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+
+# Security Headers
+<IfModule mod_headers.c>
+  # X-Frame-Options
+  Header always set X-Frame-Options "SAMEORIGIN"
+
+  # X-Content-Type-Options
+  Header always set X-Content-Type-Options "nosniff"
+
+  # X-XSS-Protection
+  Header always set X-XSS-Protection "1; mode=block"
+
+  # Referrer-Policy
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

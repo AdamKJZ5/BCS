@@ -1,0 +1,133 @@
+/* Page Transition Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Horizontal Scroll Animation for Announcement Bar */
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeInFast {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.page-transition {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.page-transition-fast {
+  animation: fadeInFast 0.3s ease-out;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Link hover transitions */
+a {
+  transition: color 0.3s ease, background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* Button hover effects */
+button {
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Card hover effects */
+.card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Image hover effects */
+img {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Service card image hover zoom */
+.card-hover:hover img {
+  transform: scale(1.05);
+}
+
+/* Nav link hover effect */
+nav a:hover {
+  color: #FFD700 !important;
+  transform: translateY(-2px);
+}
+
+nav a:active {
+  transform: translateY(0);
+}
+
+/* Footer link hover */
+footer a:hover {
+  color: #FFD700 !important;
+  transform: translateX(4px);
+}
+
+/* Button scale on hover */
+a[href="/contact"]:hover,
+a[style*="backgroundColor"]:hover {
+  color: #0047AB !important;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+/* Fade in elements on scroll */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-on-scroll {
+  animation: slideInUp 0.6s ease-out;
+}

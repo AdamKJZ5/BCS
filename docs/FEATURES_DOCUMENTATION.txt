@@ -1,0 +1,1118 @@
+================================================================================
+BELLEVUE COLLISION SERVICES - COMPLETE FEATURES DOCUMENTATION
+================================================================================
+Last Updated: January 26, 2026
+System Status: PRODUCTION READY
+Version: 1.0.0
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+1. CUSTOMER-FACING FEATURES
+2. ADMIN FEATURES
+3. APPOINTMENT & SCHEDULING SYSTEM
+4. PAYMENT & INVOICING SYSTEM
+5. NOTIFICATION SYSTEM
+6. REVIEWS & TESTIMONIALS SYSTEM
+7. AUTHENTICATION & AUTHORIZATION
+8. EMAIL & SMS COMMUNICATIONS
+9. TECHNICAL INFRASTRUCTURE
+
+================================================================================
+1. CUSTOMER-FACING FEATURES
+================================================================================
+
+1.1 PUBLIC WEBSITE
+--------------------------------------------------------------------------------
+Location: Public pages accessible without login
+Files: /client/src/pages/public/*
+
+FEATURES:
+• Home Page
+  - Hero section with call-to-action
+  - Services overview
+  - Featured testimonials
+  - Scrolling announcement banner
+  - Contact information
+
+• Services Page
+  - Complete list of collision repair services
+  - Detailed service descriptions
+  - Pricing information
+
+• Gallery
+  - Before/after photo showcase
+  - Filterable by damage type
+  - High-quality image display
+
+• Testimonials Page (NEW!)
+  - Public customer reviews (4+ stars)
+  - Featured reviews highlighted
+  - Average rating display
+  - Response from business owner
+
+• Contact/Quote Form
+  - Lead submission with damage photos
+  - Optional appointment booking
+  - Real-time availability checking
+  - Multi-step form with validation
+  - Email confirmation upon submission
+
+• About Page
+  - Company history and values
+  - Team information
+  - Location and hours
+
+USE CASES:
+• Customers research services before booking
+• View social proof through testimonials
+• Request quotes and schedule appointments
+• See examples of previous work in gallery
+
+1.2 CUSTOMER DASHBOARD
+--------------------------------------------------------------------------------
+Location: /customer/dashboard
+Authentication: Required (customer role)
+Files: /client/src/pages/customer/Dashboard.tsx
+
+FEATURES:
+• My Repairs Tab
+  - View all submitted leads/repairs
+  - Track repair status and progress
+  - View progress notes from technicians
+  - See repair stage timeline
+  - Upload additional damage photos
+
+• My Invoices Tab
+  - View all invoices (pending, paid, overdue)
+  - Download invoices as PDF
+  - Make online payments via Stripe
+  - View payment history
+  - Track outstanding balances
+
+• My Appointments Tab
+  - View upcoming and past appointments
+  - Appointment details (date, time, technician)
+  - Reschedule appointments
+  - Cancel appointments (24h+ notice)
+  - Export appointments to Google Calendar/iCal
+  - "Add to Calendar" button for each appointment
+  - Upload vehicle photos before appointment
+
+• My Vehicles Tab
+  - Register vehicles (make, model, year, VIN)
+  - Set primary vehicle
+  - Update vehicle information (color, license plate, mileage)
+  - Add vehicle notes
+  - Delete vehicles
+  - View service history linked to each vehicle
+
+• Service History Tab (NEW!)
+  - View complete service history across all vehicles
+  - See services provided by Bellevue Collision
+  - Track external service records
+  - View parts used and labor details
+  - See service recommendations
+  - Track warranty expiration dates
+  - View upcoming service due dates
+  - Filter by vehicle or service type
+  - Cost tracking per service
+
+USE CASES:
+• Customer tracks repair from quote to completion
+• Customer pays invoices online
+• Customer manages appointments
+• Customer maintains vehicle records
+
+1.3 CUSTOMER ACCOUNT MANAGEMENT
+--------------------------------------------------------------------------------
+Files: /client/src/pages/customer/*
+
+FEATURES:
+• Registration
+  - Email and password signup
+  - Profile information (name, phone)
+  - Email verification
+
+• Login
+  - Secure authentication
+  - Remember me option
+  - Redirect to dashboard
+
+• Password Reset
+  - Forgot password workflow
+  - Email reset link
+  - Secure token validation
+
+• Invited Customer Signup
+  - Admin creates customer from lead
+  - Customer receives email invitation
+  - One-time signup link
+  - Complete account setup
+
+USE CASES:
+• New customers self-register
+• Existing customers log in to track repairs
+• Admin invites customers who submitted leads
+• Customers reset forgotten passwords
+
+================================================================================
+2. ADMIN FEATURES
+================================================================================
+
+2.1 ADMIN DASHBOARD
+--------------------------------------------------------------------------------
+Location: /admin/dashboard
+Authentication: Required (admin role)
+Files: /client/src/pages/admin/Dashboard.tsx
+
+FEATURES:
+• Quick Stats Overview
+  - Total leads (new, contacted, closed)
+  - Active repairs
+  - Pending invoices
+  - Total revenue
+  - Appointments this week
+
+• Recent Activity Feed
+  - New leads
+  - Recent payments
+  - Upcoming appointments
+  - System notifications
+
+• Performance Metrics
+  - Lead conversion rate
+  - Average repair time
+  - Payment collection rate
+  - Customer satisfaction (reviews)
+
+USE CASES:
+• Admin gets quick business overview
+• Monitor key performance indicators
+• Identify urgent items needing attention
+
+2.2 LEAD MANAGEMENT
+--------------------------------------------------------------------------------
+Location: /admin/leads
+Files: /client/src/pages/admin/AdminLeads.tsx
+
+FEATURES:
+• Comprehensive Lead List
+  - Paginated view (10/20/50 per page)
+  - Expandable cards for details
+  - Photo gallery for damage images
+  - Search by name, email, phone, message
+  - Filter by status (new, contacted, closed)
+  - Filter by repair stage
+  - Date range filtering
+  - Sortable columns
+
+• Lead Actions
+  - Update lead status
+  - Assign repair stage
+  - Add progress notes
+  - Create customer account from lead
+  - Resend signup invitation email
+  - Archive leads
+
+• Repair Tracking
+  - Repair stages: pending → assessment → parts ordered → in progress → quality check → completed
+  - Parts status tracking
+  - Estimated completion date
+  - Actual completion date
+  - Vehicle information
+  - Insurance claim number
+  - Estimate and final amounts
+
+• Email Notifications
+  - Status update emails to customer
+  - Repair progress emails
+  - Follow-up emails
+
+USE CASES:
+• Admin converts website inquiries to customers
+• Track repair progress from quote to completion
+• Manage communication with customers
+• Search and filter leads efficiently
+
+2.3 APPOINTMENT CALENDAR
+--------------------------------------------------------------------------------
+Location: /admin/calendar
+Files: /client/src/pages/admin/AdminCalendar.tsx
+
+FEATURES:
+• React Big Calendar Integration
+  - Day, week, month views
+  - Color-coded by appointment status
+  - Drag-and-drop rescheduling
+  - Click to view details
+
+• Appointment Management
+  - Create customer appointments
+  - Create private appointments (admin meetings, blocked time)
+  - Assign appointments to employees
+  - Update appointment status
+  - Add notes to appointments
+  - Create invoice from appointment
+
+• Employee Management
+  - Filter appointments by employee
+  - View employee schedules
+  - Auto-assign appointments (round-robin)
+
+• Calendar Export
+  - Export all appointments to iCal
+  - Filter by employee before export
+  - Compatible with Google Calendar, Outlook
+
+• Appointment Types
+  - Drop-off
+  - Pickup
+  - Consultation
+  - Estimate
+  - Inspection
+
+USE CASES:
+• Schedule customer appointments
+• Manage technician schedules
+• Block time for meetings/lunch
+• Prevent double-booking
+• Export schedules to personal calendar
+
+2.4 REVIEWS MANAGEMENT (NEW!)
+--------------------------------------------------------------------------------
+Location: /admin/reviews
+Files: /client/src/pages/admin/AdminReviews.tsx
+
+FEATURES:
+• Review Moderation
+  - View all submitted reviews
+  - Approve or reject reviews
+  - Add moderation notes
+  - Delete inappropriate reviews
+
+• Review Actions
+  - Toggle featured status (show on homepage)
+  - Respond to reviews publicly
+  - Search reviews by content or customer
+
+• Statistics Dashboard
+  - Total reviews count
+  - Pending reviews count
+  - Approved reviews count
+  - Average rating
+  - Rating distribution (1-5 stars)
+
+• Filters
+  - Filter by status (pending, approved, rejected)
+  - Filter by rating (1-5 stars)
+  - Search reviews by text
+
+USE CASES:
+• Moderate customer reviews before public display
+• Feature best reviews on homepage
+• Respond to customer feedback
+• Monitor customer satisfaction trends
+
+2.5 SETTINGS MANAGEMENT (NEW!)
+--------------------------------------------------------------------------------
+Location: /admin/settings
+Files: /client/src/pages/admin/Settings.tsx
+
+FEATURES:
+• Business Information Tab
+  - Business name
+  - Phone number
+  - Email address
+  - Physical address
+  - Display hours (Mon-Fri, Sat, Sun)
+
+• Appointment Settings Tab
+  - Enable/disable online booking
+  - Default appointment duration
+  - Buffer time between appointments
+  - Maximum advance booking days
+  - Minimum advance booking hours
+  - Business hours per day (Mon-Sun)
+  - Start and end times per day
+  - Enable/disable specific days
+
+• Reminder Settings Tab
+  - Enable/disable reminder system
+  - Configurable reminder times:
+    * 24 hours before
+    * 48 hours before
+    * 1 week before
+    * Custom intervals
+  - Follow-up reminders:
+    * Enable/disable
+    * Days after completion (default: 7)
+  - Reminder methods:
+    * Email
+    * SMS (requires Twilio setup)
+
+• Email Settings Tab
+  - Notification email address
+  - Auto-reply to customers toggle
+
+USE CASES:
+• Configure business without code changes
+• Adjust appointment availability seasonally
+• Customize reminder timing
+• Update contact information
+
+2.6 GALLERY MANAGEMENT
+--------------------------------------------------------------------------------
+Location: /admin/gallery
+Files: /client/src/pages/admin/GalleryManagement.tsx
+
+FEATURES:
+• Photo Upload
+  - Bulk upload
+  - Before/after pairing
+  - Damage type categorization
+
+• Photo Management
+  - Edit descriptions
+  - Delete photos
+  - Reorder display
+
+USE CASES:
+• Showcase previous repair work
+• Build portfolio for marketing
+• Demonstrate quality to prospects
+
+================================================================================
+3. APPOINTMENT & SCHEDULING SYSTEM
+================================================================================
+
+3.1 AVAILABILITY CHECKING
+--------------------------------------------------------------------------------
+Files: 
+- /server/src/controllers/appointmentController.ts (getAvailability)
+- /client/src/components/TimeSlotSelector.tsx
+
+FEATURES:
+• Real-Time Availability
+  - Checks business hours settings
+  - Respects buffer time between appointments
+  - Considers existing appointments
+  - Excludes blocked dates/holidays
+  - Validates minimum advance notice
+
+• Time Slot Generation
+  - Creates slots based on appointment duration
+  - Filters out conflicts
+  - Returns available slots only
+
+USE CASES:
+• Customer books appointment from contact form
+• Admin sees available times when scheduling
+• Prevents double-booking automatically
+
+3.2 APPOINTMENT REMINDERS (ENHANCED!)
+--------------------------------------------------------------------------------
+Files: /server/src/jobs/appointmentReminders.ts
+
+FEATURES:
+• Configurable Reminder Times
+  - Multiple reminders per appointment
+  - 24h, 48h, 1 week before options
+  - Admin configurable via settings
+  - Runs hourly, checks reminder windows
+
+• Follow-Up Reminders
+  - Sent X days after completion
+  - Asks for feedback and reviews
+  - Thanks customer for business
+  - Encourages online review
+
+• Reminder Methods
+  - Email (using templates)
+  - SMS (via Twilio, if configured)
+  - Configurable per method
+
+• Smart Scheduling
+  - Cron job runs hourly
+  - Checks settings for enabled reminders
+  - Only sends to confirmed/scheduled appointments
+  - Skips private appointments
+  - Tracks sent status to prevent duplicates
+
+USE CASES:
+• Reduce no-shows with timely reminders
+• Gather reviews from satisfied customers
+• Maintain customer engagement post-service
+
+3.3 CALENDAR INTEGRATION (NEW!)
+--------------------------------------------------------------------------------
+Files:
+- /server/src/utils/icalGenerator.ts
+- /client/src/api/appointments.ts (export functions)
+
+FEATURES:
+• iCal File Generation
+  - RFC 5545 compliant .ics files
+  - Includes appointment details
+  - Sets reminder alarms
+  - Proper timezone handling (PST)
+
+• Export Options
+  - Single appointment export
+  - Export all customer appointments
+  - Admin export with filters
+
+• Calendar Compatibility
+  - Google Calendar
+  - Apple Calendar
+  - Microsoft Outlook
+  - Any iCal-compatible app
+
+USE CASES:
+• Customer adds appointment to personal calendar
+• Admin exports employee schedule
+• Sync appointments across devices
+
+================================================================================
+4. PAYMENT & INVOICING SYSTEM
+================================================================================
+
+4.1 INVOICE MANAGEMENT
+--------------------------------------------------------------------------------
+Files:
+- /server/src/controllers/invoiceController.ts
+- /client/src/pages/admin/* (invoice views)
+
+FEATURES:
+• Invoice Creation
+  - Generate from appointments or leads
+  - Line-item breakdown
+  - Labor, parts, materials, paint
+  - Tax calculation
+  - Subtotal and total
+
+• Invoice Status
+  - Draft → Sent → Partially Paid → Paid → Overdue
+  - Automatic status updates
+  - Due date tracking
+  - Payment tracking
+
+• Search & Filter
+  - Search by invoice number or customer
+  - Filter by status
+  - Amount range filtering
+  - Date range filtering
+  - Sort by various fields
+
+• Customer Actions
+  - View invoices in dashboard
+  - Pay online via Stripe
+  - Download PDF (future)
+
+USE CASES:
+• Admin creates invoice after repair estimate
+• Customer pays invoice online
+• Track outstanding payments
+• Monitor cash flow
+
+4.2 STRIPE PAYMENT INTEGRATION
+--------------------------------------------------------------------------------
+Files:
+- /server/src/controllers/paymentController.ts
+- /client/src/components/PaymentModal.tsx
+
+FEATURES:
+• Secure Payment Processing
+  - PCI-compliant (Stripe handles cards)
+  - Credit/debit card payments
+  - Real-time payment confirmation
+
+• Stripe Checkout
+  - Hosted payment page
+  - Mobile-optimized
+  - Multiple payment methods
+  - Automatic receipt emails
+
+• Webhook Handling
+  - Real-time payment status updates
+  - Invoice auto-update on success
+  - Notification to customer and admins
+
+• Payment Records
+  - Transaction IDs stored
+  - Payment history
+  - Refund tracking
+
+USE CASES:
+• Customer pays invoices from dashboard
+• Automated payment collection
+• Reduce manual payment processing
+
+4.3 NOTIFICATIONS FOR PAYMENTS
+--------------------------------------------------------------------------------
+Files: /server/src/controllers/invoiceController.ts
+
+FEATURES:
+• Customer Notifications
+  - Invoice sent notification
+  - Payment confirmation
+  - Receipt email from Stripe
+
+• Admin Notifications
+  - Payment received alerts
+  - In-app notification bell
+  - Includes customer and amount info
+
+USE CASES:
+• Customer knows invoice is ready
+• Admin notified of payments immediately
+• Reduces follow-up calls
+
+================================================================================
+5. NOTIFICATION SYSTEM
+================================================================================
+
+5.1 IN-APP NOTIFICATIONS
+--------------------------------------------------------------------------------
+Files:
+- /client/src/components/NotificationBell.tsx
+- /server/src/models/Notification.ts
+
+FEATURES:
+• Notification Types
+  - Appointments (created, updated, reminder)
+  - Invoices (sent, viewed)
+  - Payments (received)
+  - Leads (status updated)
+  - Reviews (new review submitted)
+  - System (general alerts)
+
+• Notification Bell
+  - Real-time unread count badge
+  - Dropdown with recent notifications
+  - Click to mark as read
+  - Links to related content
+
+• Admin Notifications
+  - All admins receive system alerts
+  - Payment notifications
+  - New review notifications
+
+• Customer Notifications
+  - Invoice sent
+  - Payment confirmation
+  - Appointment reminders
+  - Lead status updates
+
+USE CASES:
+• Keep admins informed of activity
+• Customer knows when action needed
+• Centralized communication hub
+
+================================================================================
+6. REVIEWS & TESTIMONIALS SYSTEM (NEW!)
+================================================================================
+
+6.1 CUSTOMER REVIEW SUBMISSION
+--------------------------------------------------------------------------------
+Files:
+- /client/src/components/ReviewModal.tsx
+- /server/src/controllers/reviewController.ts
+
+FEATURES:
+• Review Form
+  - 5-star rating
+  - Optional title
+  - Comment (required, max 1000 chars)
+  - Service type
+  - Opt-in for public display
+
+• Review Linking
+  - Link to specific lead
+  - Link to specific appointment
+  - Helps track service quality
+
+• Moderation Workflow
+  - Reviews start as "pending"
+  - Admin approves/rejects
+  - Only approved shown publicly
+
+USE CASES:
+• Customer leaves review after service
+• Build testimonial portfolio
+• Improve services based on feedback
+
+6.2 PUBLIC TESTIMONIALS PAGE
+--------------------------------------------------------------------------------
+Location: /testimonials
+Files: /client/src/pages/public/Testimonials.tsx
+
+FEATURES:
+• Display Settings
+  - Shows 4+ star reviews only
+  - Featured reviews highlighted
+  - Average rating displayed
+  - Total review count
+
+• Review Cards
+  - Customer name (first name + last initial)
+  - Rating stars
+  - Review title and comment
+  - Service type
+  - Response from business (if any)
+  - Date posted
+
+• Sorting
+  - Featured reviews first
+  - Then by newest
+
+USE CASES:
+• Prospects evaluate business reputation
+• Social proof for new customers
+• Showcase quality work and service
+
+6.3 ADMIN REVIEW MANAGEMENT
+--------------------------------------------------------------------------------
+Location: /admin/reviews
+Files: /client/src/pages/admin/AdminReviews.tsx
+
+FEATURES:
+• Moderation Queue
+  - Approve/reject reviews
+  - Add internal moderation notes
+  - Delete inappropriate content
+
+• Featured Reviews
+  - Toggle featured status
+  - Featured reviews show on homepage
+  - Highlighted in testimonials
+
+• Responding to Reviews
+  - Public response visible to all
+  - Shows business cares
+  - Handles complaints professionally
+
+• Statistics
+  - Average rating
+  - Total/pending/approved counts
+  - Rating distribution graph
+
+USE CASES:
+• Moderate reviews before going live
+• Feature best testimonials
+• Respond to customer feedback
+• Monitor satisfaction trends
+
+================================================================================
+7. AUTHENTICATION & AUTHORIZATION
+================================================================================
+
+7.1 USER ROLES
+--------------------------------------------------------------------------------
+Files: /server/src/models/User.ts
+
+ROLES:
+• Customer
+  - Access own dashboard
+  - View own repairs, invoices, appointments
+  - Make payments
+  - Leave reviews
+  - Manage own vehicles
+
+• Admin
+  - Access admin panel
+  - Manage all leads, invoices, appointments
+  - View all customer data
+  - Moderate reviews
+  - Configure settings
+  - View analytics
+
+7.2 AUTHENTICATION FLOW
+--------------------------------------------------------------------------------
+Files: /server/src/controllers/authController.ts
+
+FEATURES:
+• JWT Token Authentication
+  - Secure token generation
+  - Token expiration
+  - Refresh capability
+
+• Password Security
+  - bcrypt hashing
+  - Salted passwords
+  - Minimum strength requirements
+
+• Email Verification
+  - Verification token sent
+  - One-time use links
+  - Expiration after 24 hours
+
+USE CASES:
+• Secure user sessions
+• Protect sensitive data
+• Prevent unauthorized access
+
+7.3 AUTHORIZATION MIDDLEWARE
+--------------------------------------------------------------------------------
+Files: /server/src/middlewares/*
+
+MIDDLEWARE:
+• authMiddleware
+  - Verifies JWT token
+  - Attaches user to request
+  - Allows authenticated users
+
+• adminAuth
+  - Requires admin role
+  - Blocks non-admins
+
+• customerOnly
+  - Requires customer role
+  - Used for customer-specific routes
+
+USE CASES:
+• Protect admin routes
+• Ensure customers only access own data
+• Enforce role-based permissions
+
+================================================================================
+8. EMAIL & SMS COMMUNICATIONS
+================================================================================
+
+8.1 EMAIL SYSTEM
+--------------------------------------------------------------------------------
+Files: /server/src/utils/email.ts
+
+EMAIL TYPES:
+• Customer Emails
+  - Lead submission confirmation
+  - Account invitation (from admin)
+  - Password reset link
+  - Invoice sent notification
+  - Payment confirmation
+  - Appointment confirmation
+  - Appointment reminder (24h before)
+  - Appointment follow-up (7 days after)
+  - Lead status update
+  - Repair tracking update
+
+• Admin Emails
+  - New lead notification
+  - (Admin notifications primarily in-app)
+
+EMAIL FEATURES:
+• HTML templates with company branding
+• Professional design
+• Call-to-action buttons
+• Mobile responsive
+• Plain text fallback
+
+USE CASES:
+• Automated customer communication
+• Reduce manual follow-ups
+• Professional brand image
+
+8.2 SMS SYSTEM (OPTIONAL)
+--------------------------------------------------------------------------------
+Files: /server/src/utils/sms.ts
+
+FEATURES:
+• Twilio Integration
+  - Send SMS reminders
+  - Appointment confirmations
+  - Status updates
+
+• SMS Types
+  - Appointment reminder
+  - Invoice created
+  - (Optional, requires Twilio config)
+
+REQUIREMENTS:
+• Twilio account
+• Phone number verification
+• Customer phone numbers
+
+USE CASES:
+• Reach customers who don't check email
+• Time-sensitive reminders
+• Improved engagement
+
+================================================================================
+9. TECHNICAL INFRASTRUCTURE
+================================================================================
+
+9.1 BACKEND ARCHITECTURE
+--------------------------------------------------------------------------------
+Technology Stack:
+• Node.js + Express
+• TypeScript
+• MongoDB + Mongoose
+• Stripe SDK
+• Nodemailer (email)
+• Twilio SDK (SMS)
+• JWT authentication
+• bcrypt (password hashing)
+• node-cron (scheduled jobs)
+
+Key Features:
+• RESTful API design
+• Error handling middleware
+• Request validation
+• Rate limiting
+• CORS configuration
+• Environment variables (.env)
+• Centralized error handling
+
+Files Structure:
+/server
+├── src/
+│   ├── controllers/     # Business logic
+│   ├── models/          # MongoDB schemas
+│   ├── routes/          # API endpoints
+│   ├── middlewares/     # Auth, validation, errors
+│   ├── utils/           # Email, SMS, helpers
+│   ├── jobs/            # Cron jobs (reminders)
+│   └── config/          # Configuration
+├── uploads/             # User uploaded files
+└── dist/                # Compiled TypeScript
+
+9.2 FRONTEND ARCHITECTURE
+--------------------------------------------------------------------------------
+Technology Stack:
+• React 18
+• TypeScript
+• Vite (build tool)
+• React Router (routing)
+• Context API (auth state)
+• React Big Calendar (appointments)
+• Inline styles (no CSS frameworks)
+
+Key Features:
+• Responsive design
+• Mobile-friendly
+• Type-safe with TypeScript
+• Component-based architecture
+• Protected routes
+• Form validation
+• Optimistic UI updates
+• Error boundaries
+
+Files Structure:
+/client
+├── src/
+│   ├── pages/
+│   │   ├── public/      # Public website
+│   │   ├── customer/    # Customer dashboard
+│   │   └── admin/       # Admin panel
+│   ├── components/      # Reusable components
+│   ├── api/             # API client functions
+│   ├── context/         # React Context (auth)
+│   └── styles/          # Global styles, transitions
+└── dist/                # Production build
+
+9.3 DATABASE MODELS
+--------------------------------------------------------------------------------
+Collections:
+• Users
+  - Customers and admins
+  - Authentication credentials
+  - Profile information
+
+• Leads
+  - Customer inquiries
+  - Damage photos
+  - Repair tracking
+  - Progress notes
+
+• Appointments
+  - Scheduled times
+  - Customer/employee assignments
+  - Appointment types
+  - Status tracking
+  - Photos
+
+• Invoices
+  - Line items
+  - Payment tracking
+  - Status management
+  - Stripe integration
+
+• Reviews
+  - Customer feedback
+  - Ratings
+  - Moderation status
+  - Business responses
+
+• Vehicles
+  - Customer vehicles
+  - Service history
+
+• Notifications
+  - In-app messages
+  - Read/unread status
+  - Related entities
+
+• Settings
+  - Business configuration
+  - Appointment settings
+  - Reminder settings
+
+• Gallery
+  - Before/after photos
+  - Damage categories
+
+9.4 API ENDPOINTS
+--------------------------------------------------------------------------------
+Public Endpoints:
+• POST /api/leads                    # Submit quote request
+• GET  /api/appointments/availability # Check availability
+• GET  /api/reviews/public            # Get testimonials
+• GET  /api/gallery                   # Get gallery photos
+
+Customer Endpoints:
+• POST /api/auth/register             # Customer signup
+• POST /api/auth/login                # Customer login
+• GET  /api/customer/repairs          # Get customer's repairs
+• GET  /api/invoices/my-invoices      # Get customer's invoices
+• GET  /api/appointments/my-appointments # Get customer's appointments
+• POST /api/appointments              # Create appointment
+• GET  /api/vehicles/my-vehicles      # Get customer's vehicles
+• GET  /api/service-records/my-records # Get customer's service history
+• GET  /api/service-records/vehicle/:vehicleId # Get service records for vehicle
+• GET  /api/service-records/vehicle/:vehicleId/stats # Get vehicle service stats
+• POST /api/service-records           # Create service record (customer)
+• POST /api/reviews                   # Submit review
+• POST /api/payments/create-checkout-session # Pay invoice
+
+Admin Endpoints:
+• POST /api/admin/login               # Admin login
+• GET  /api/admin/leads               # Get all leads (with filters)
+• PATCH /api/admin/leads/:id/status   # Update lead status
+• PATCH /api/admin/leads/:id/tracking # Update repair tracking
+• POST /api/admin/leads/:id/notes     # Add progress note
+• GET  /api/appointments              # Get all appointments (admin)
+• POST /api/appointments/admin        # Create appointment (admin)
+• GET  /api/appointments/calendar     # Calendar view data
+• GET  /api/invoices                  # Get all invoices (with filters)
+• POST /api/invoices                  # Create invoice
+• POST /api/invoices/:id/send         # Send invoice to customer
+• POST /api/invoices/:id/payment      # Record payment
+• GET  /api/service-records/admin/all # Get all service records (with filters)
+• POST /api/service-records/admin     # Create service record (admin)
+• PATCH /api/service-records/admin/:id # Update service record (admin)
+• GET  /api/service-records/admin/stats # Get service statistics
+• GET  /api/reviews                   # Get all reviews (with filters)
+• PATCH /api/reviews/:id/moderate     # Approve/reject review
+• PATCH /api/reviews/:id/featured     # Toggle featured
+• POST /api/reviews/:id/respond       # Respond to review
+• GET  /api/admin/settings            # Get settings
+• PUT  /api/admin/settings            # Update settings
+
+9.5 SCHEDULED JOBS
+--------------------------------------------------------------------------------
+Cron Jobs:
+• Appointment Reminders
+  - Runs: Hourly
+  - Checks configured reminder windows
+  - Sends email/SMS reminders
+  - Marks reminders as sent
+
+• Follow-Up Reminders
+  - Runs: Daily at 10 AM
+  - Finds completed appointments
+  - Sends follow-up X days after
+  - Requests reviews and feedback
+
+9.6 FILE UPLOADS
+--------------------------------------------------------------------------------
+Features:
+• Damage Photos (Leads)
+  - Multi-file upload
+  - Image validation
+  - Stored in /uploads/leads/
+
+• Appointment Photos
+  - Before service photos
+  - Stored in /uploads/appointments/
+
+• Gallery Photos
+  - Before/after pairs
+  - Stored in /uploads/gallery/
+
+Storage:
+• Local file system (/uploads)
+• Public access via /uploads route
+• File size limits enforced
+• File type validation (images only)
+
+9.7 SECURITY FEATURES
+--------------------------------------------------------------------------------
+• Password hashing with bcrypt
+• JWT token authentication
+• CORS configuration
+• Rate limiting on sensitive routes
+• SQL injection prevention (MongoDB)
+• XSS prevention (input sanitization)
+• CSRF protection
+• Environment variable protection
+• Secure password reset flow
+• Email verification
+• Role-based access control
+
+9.8 ENVIRONMENT VARIABLES
+--------------------------------------------------------------------------------
+Required Variables:
+• MONGO_URI                 # MongoDB connection
+• JWT_SECRET                # Token signing key
+• SMTP_HOST                 # Email server
+• SMTP_USER                 # Email username
+• SMTP_PASS                 # Email password
+• FRONTEND_URL              # Frontend URL
+• BASE_URL                  # Backend URL
+• STRIPE_SECRET_KEY         # Stripe API key
+• STRIPE_WEBHOOK_SECRET     # Stripe webhook
+• OWNER_EMAIL               # Admin notification email
+
+Optional Variables:
+• TWILIO_ACCOUNT_SID        # SMS (optional)
+• TWILIO_AUTH_TOKEN         # SMS (optional)
+• TWILIO_PHONE_NUMBER       # SMS (optional)
+
+================================================================================
+DEPLOYMENT CHECKLIST
+================================================================================
+
+Backend Deployment:
+☑ Set all environment variables
+☑ Configure MongoDB connection
+☑ Set up Stripe webhook endpoint
+☑ Configure email server (SMTP)
+☑ Set CORS_ORIGIN to frontend domain
+☑ Run database migrations (if any)
+☑ Start cron jobs (reminders)
+☑ Test all API endpoints
+☑ Monitor error logs
+
+Frontend Deployment:
+☑ Set VITE_API_BASE_URL to backend URL
+☑ Build production bundle (npm run build)
+☑ Deploy dist/ folder to hosting
+☑ Configure custom domain
+☑ Set up SSL certificate (HTTPS)
+☑ Test all user flows
+☑ Verify mobile responsiveness
+
+Post-Deployment:
+☑ Create admin account
+☑ Configure business settings
+☑ Set up appointment hours
+☑ Configure reminder times
+☑ Upload initial gallery photos
+☑ Test payment processing (Stripe test mode first!)
+☑ Test email delivery
+☑ Monitor application logs
+☑ Set up error tracking (Sentry, etc.)
+
+================================================================================
+END OF DOCUMENTATION
+================================================================================

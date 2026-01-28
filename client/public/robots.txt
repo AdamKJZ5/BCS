@@ -1,0 +1,20 @@
+# robots.txt for Bellevue Collision Services
+
+User-agent: *
+Allow: /
+Allow: /services
+Allow: /contact
+Allow: /about
+Allow: /gallery
+Disallow: /admin/
+Disallow: /api/
+
+# Sitemap location
+Sitemap: http://www.bellevuecollisionservices.com/sitemap.xml
+
+# Allow search engines to crawl images
+User-agent: Googlebot-Image
+Allow: /assets/images/
+
+# Crawl delay
+Crawl-delay: 0
