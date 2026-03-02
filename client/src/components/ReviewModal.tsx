@@ -1,5 +1,6 @@
 import { useState, FormEvent } from "react";
 import { createReview, CreateReviewData } from "../api/reviews";
+import useModal from "../hooks/useModal";
 
 interface ReviewModalProps {
   onClose: () => void;
@@ -9,6 +10,7 @@ interface ReviewModalProps {
 }
 
 const ReviewModal = ({ onClose, onSuccess, leadId, appointmentId }: ReviewModalProps) => {
+  const modal = useModal();
   const [formData, setFormData] = useState<CreateReviewData>({
     rating: 5,
     title: "",
@@ -18,29 +20,21 @@ const ReviewModal = ({ onClose, onSuccess, leadId, appointmentId }: ReviewModalP
     appointmentId,
     displayOnWebsite: true,
   });
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError("");
 
     if (!formData.comment.trim()) {
-      setError("Please write a comment");
+      modal.setError("Please write a comment");
       return;
     }
 
-    setSubmitting(true);
-
-    try {
-      await createReview(formData);
-      onSuccess();
-      onClose();
-    } catch (err: any) {
-      setError(err.message || "Failed to submit review");
-    } finally {
-      setSubmitting(false);
-    }
+    await modal.handleSubmit(
+      async () => {
+        await createReview(formData);
+      },
+      { onSuccess }
+    );
   };
 
   const handleStarClick = (rating: number) => {
@@ -55,7 +49,7 @@ const ReviewModal = ({ onClose, onSuccess, leadId, appointmentId }: ReviewModalP
           <button onClick={onClose} style={styles.closeButton}>×</button>
         </div>
 
-        {error && <div style={styles.error}>{error}</div>}
+        {modal.error && <div style={styles.error}>{modal.error}</div>}
 
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.formGroup}>
@@ -126,8 +120,8 @@ const ReviewModal = ({ onClose, onSuccess, leadId, appointmentId }: ReviewModalP
           </div>
 
           <div style={styles.actions}>
-            <button type="submit" disabled={submitting} style={styles.submitButton}>
-              {submitting ? "Submitting..." : "Submit Review"}
+            <button type="submit" disabled={modal.loading} style={styles.submitButton}>
+              {modal.loading ? "Submitting..." : "Submit Review"}
             </button>
             <button type="button" onClick={onClose} style={styles.cancelButton}>
               Cancel

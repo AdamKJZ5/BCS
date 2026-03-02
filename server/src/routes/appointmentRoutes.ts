@@ -2,6 +2,7 @@ import { Router } from "express";
 import { authMiddleware, customerOnly } from "../middlewares/auth";
 import { adminAuth } from "../middlewares/adminAuth";
 import { appointmentUpload } from "../middlewares/appointmentUpload";
+import { uploadLimiter } from "../middlewares/rateLimiters";
 import {
   getAvailability,
   createAppointment,
@@ -21,7 +22,7 @@ import {
   exportAppointmentICalendSingle,
   exportMyAppointmentsICal,
   exportAllAppointmentsICal,
-} from "../controllers/appointmentController";
+} from "../controllers/appointments";
 
 const router = Router();
 
@@ -37,7 +38,7 @@ router.delete("/:id", authMiddleware, customerOnly, cancelAppointment);
 router.get("/:id/export", authMiddleware, exportAppointmentICalendSingle);
 
 // Photo upload routes (both customers and admins can upload)
-router.post("/:id/photos", authMiddleware, appointmentUpload.array("photos", 10), uploadAppointmentPhotos);
+router.post("/:id/photos", authMiddleware, uploadLimiter, appointmentUpload.array("photos", 10), uploadAppointmentPhotos);
 router.delete("/:id/photos/:photoIndex", authMiddleware, deleteAppointmentPhoto);
 
 // Admin routes

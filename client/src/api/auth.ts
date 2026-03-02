@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import apiClient from '../utils/apiClient';
 
 export interface LoginData {
   email: string;
@@ -26,49 +26,28 @@ export interface AuthResponse {
 }
 
 export const login = async (data: LoginData): Promise<AuthResponse> => {
-  const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Login failed");
+  try {
+    const response = await apiClient.post('/auth/login', data);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "Login failed");
   }
-
-  return response.json();
 };
 
 export const register = async (data: RegisterData): Promise<AuthResponse> => {
-  const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Registration failed");
+  try {
+    const response = await apiClient.post('/auth/register', data);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "Registration failed");
   }
-
-  return response.json();
 };
 
-export const getMe = async (token: string) => {
-  const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch user");
+export const getMe = async () => {
+  try {
+    const response = await apiClient.get('/auth/me');
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "Failed to fetch user");
   }
-
-  return response.json();
 };

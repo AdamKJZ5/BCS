@@ -1,6 +1,4 @@
-import axios from "axios";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+import apiClient from '../utils/apiClient';
 
 export interface Notification {
   _id: string;
@@ -27,7 +25,6 @@ export interface NotificationsResponse {
  * Get user's notifications
  */
 export async function getNotifications(
-  token: string,
   options?: { limit?: number; skip?: number; unreadOnly?: boolean }
 ): Promise<NotificationsResponse> {
   try {
@@ -36,13 +33,7 @@ export async function getNotifications(
     if (options?.skip) params.skip = options.skip;
     if (options?.unreadOnly) params.unreadOnly = "true";
 
-    const response = await axios.get(`${API_BASE}/notifications`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      params,
-    });
-
+    const response = await apiClient.get('/notifications', { params });
     return response.data;
   } catch (error: any) {
     console.error("Error fetching notifications:", error);
@@ -53,14 +44,9 @@ export async function getNotifications(
 /**
  * Get unread notification count
  */
-export async function getUnreadCount(token: string): Promise<number> {
+export async function getUnreadCount(): Promise<number> {
   try {
-    const response = await axios.get(`${API_BASE}/notifications/unread-count`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
+    const response = await apiClient.get('/notifications/unread-count');
     return response.data.count;
   } catch (error: any) {
     console.error("Error fetching unread count:", error);
@@ -71,17 +57,9 @@ export async function getUnreadCount(token: string): Promise<number> {
 /**
  * Mark notification as read
  */
-export async function markAsRead(notificationId: string, token: string): Promise<void> {
+export async function markAsRead(notificationId: string): Promise<void> {
   try {
-    await axios.patch(
-      `${API_BASE}/notifications/${notificationId}/read`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    await apiClient.patch(`/notifications/${notificationId}/read`);
   } catch (error: any) {
     console.error("Error marking notification as read:", error);
     throw new Error(error.response?.data?.message || "Failed to mark notification as read");
@@ -91,17 +69,9 @@ export async function markAsRead(notificationId: string, token: string): Promise
 /**
  * Mark all notifications as read
  */
-export async function markAllAsRead(token: string): Promise<void> {
+export async function markAllAsRead(): Promise<void> {
   try {
-    await axios.patch(
-      `${API_BASE}/notifications/mark-all-read`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    await apiClient.patch('/notifications/mark-all-read');
   } catch (error: any) {
     console.error("Error marking all as read:", error);
     throw new Error(error.response?.data?.message || "Failed to mark all as read");
@@ -111,13 +81,9 @@ export async function markAllAsRead(token: string): Promise<void> {
 /**
  * Delete notification
  */
-export async function deleteNotification(notificationId: string, token: string): Promise<void> {
+export async function deleteNotification(notificationId: string): Promise<void> {
   try {
-    await axios.delete(`${API_BASE}/notifications/${notificationId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    await apiClient.delete(`/notifications/${notificationId}`);
   } catch (error: any) {
     console.error("Error deleting notification:", error);
     throw new Error(error.response?.data?.message || "Failed to delete notification");
@@ -127,13 +93,9 @@ export async function deleteNotification(notificationId: string, token: string):
 /**
  * Delete all read notifications
  */
-export async function deleteAllRead(token: string): Promise<void> {
+export async function deleteAllRead(): Promise<void> {
   try {
-    await axios.delete(`${API_BASE}/notifications/read/all`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    await apiClient.delete('/notifications/read/all');
   } catch (error: any) {
     console.error("Error deleting read notifications:", error);
     throw new Error(error.response?.data?.message || "Failed to delete read notifications");

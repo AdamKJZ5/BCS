@@ -1,17 +1,18 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import Lead from "../models/Lead";
 import User from "../models/User";
 import Appointment from "../models/Appointment";
 import { sendLeadEmailSafe, sendSignupInviteEmail, sendAppointmentConfirmation } from "../utils/email";
 import { validateLead, SPAM_ERROR, sanitizeInput } from "../validators/leadValidators";
 import { AppError } from "../utils/AppError";
+import asyncHandler from "../utils/asyncHandler";
 import crypto from "crypto";
 import { ENV } from "../config/env";
+import logger from "../utils/logger";
 
-export const createLead = async (
+export const createLead = asyncHandler(async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ) => {
   const error = validateLead(req.body);
 
@@ -77,7 +78,7 @@ export const createLead = async (
       isNewUser = true;
     }
   } catch (err) {
-    console.error("Error checking/creating user:", err);
+    logger.error("Error checking/creating user:", err);
     throw new AppError("Failed to process user account", 500);
   }
 
@@ -136,11 +137,11 @@ export const createLead = async (
           populatedAppointment.confirmationSent = true;
           await populatedAppointment.save();
         } catch (emailError) {
-          console.error("Failed to send appointment confirmation:", emailError);
+          logger.error("Failed to send appointment confirmation:", emailError);
         }
       }
     } catch (err) {
-      console.error("Failed to create appointment:", err);
+      logger.error("Failed to create appointment:", err);
       // Don't fail the whole request if appointment creation fails
     }
   }
@@ -162,4 +163,4 @@ export const createLead = async (
   }
 
   return res.status(201).json({ message: "Lead submitted successfully" });
-};
+});

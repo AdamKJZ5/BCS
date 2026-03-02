@@ -1,5 +1,6 @@
 import Notification from "../models/Notification";
 import { Types } from "mongoose";
+import logger from "../utils/logger";
 
 interface CreateNotificationParams {
   userId: Types.ObjectId | string;
@@ -45,7 +46,7 @@ export async function createNotification(params: CreateNotificationParams) {
 
     return notification;
   } catch (error) {
-    console.error("Failed to create notification:", error);
+    logger.error("Failed to create notification:", error);
     // Don't throw - notifications shouldn't break the main flow
     return null;
   }
@@ -70,7 +71,7 @@ export async function notifyAllAdmins(params: Omit<CreateNotificationParams, "us
 
     return notifications.filter((n) => n !== null);
   } catch (error) {
-    console.error("Failed to notify admins:", error);
+    logger.error("Failed to notify admins:", error);
     return [];
   }
 }

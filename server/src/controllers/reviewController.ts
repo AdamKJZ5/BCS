@@ -3,6 +3,7 @@ import Review from "../models/Review";
 import User from "../models/User";
 import { AppError } from "../utils/AppError";
 import { notifyAllAdmins } from "../utils/createNotification";
+import logger from "../utils/logger";
 
 /**
  * Create a new review (customer)
@@ -53,7 +54,7 @@ export const createReview = async (
         relatedEntity: review._id,
       });
     } catch (notifError) {
-      console.error("Failed to notify admins about review:", notifError);
+      logger.error("Failed to notify admins about review:", notifError);
     }
 
     res.status(201).json({

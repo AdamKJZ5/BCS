@@ -3,6 +3,7 @@ import Appointment from "../models/Appointment";
 import Settings from "../models/Settings";
 import { sendAppointmentReminder, sendAppointmentFollowUp } from "../utils/email";
 import { sendAppointmentReminderSMS } from "../utils/sms";
+import logger from "../utils/logger";
 
 /**
  * Send reminder emails for upcoming appointments based on configured reminder times
@@ -11,21 +12,21 @@ import { sendAppointmentReminderSMS } from "../utils/sms";
 export function startAppointmentReminderJob() {
   // Run every hour to check for reminders (will internally check settings for exact timing)
   cron.schedule("0 * * * *", async () => {
-    console.log("Running appointment reminder job...");
+    logger.info("Running appointment reminder job...");
 
     try {
       // Get settings
       const settings = await Settings.findOne();
 
       if (!settings || !settings.reminderSettings?.enabled) {
-        console.log("Reminder system is disabled in settings");
+        logger.info("Reminder system is disabled in settings");
         return;
       }
 
       const reminderTimes = settings.reminderSettings.reminderTimes.filter(rt => rt.enabled);
 
       if (reminderTimes.length === 0) {
-        console.log("No reminder times configured");
+        logger.info("No reminder times configured");
         return;
       }
 
@@ -45,7 +46,7 @@ export function startAppointmentReminderJob() {
         const reminderEndTime = new Date(reminderStartTime);
         reminderEndTime.setHours(reminderEndTime.getHours() + 1);
 
-        console.log(`Checking for appointments ${hoursBeforeAppointment} hours from now...`);
+        logger.info(`Checking for appointments ${hoursBeforeAppointment} hours from now...`);
 
         // Find appointments in this time window that haven't been reminded yet
         const upcomingAppointments = await Appointment.find({
@@ -60,7 +61,7 @@ export function startAppointmentReminderJob() {
           .populate("customerId", "name email phone")
           .populate("assignedTo", "name email");
 
-        console.log(`Found ${upcomingAppointments.length} appointments to remind (${hoursBeforeAppointment}h window)`);
+        logger.info(`Found ${upcomingAppointments.length} appointments to remind (${hoursBeforeAppointment}h window)`);
 
         // Send reminders
         for (const appointment of upcomingAppointments) {
@@ -75,7 +76,7 @@ export function startAppointmentReminderJob() {
               try {
                 await sendAppointmentReminderSMS(appointment);
               } catch (smsError) {
-                console.error(`SMS reminder failed for appointment ${appointment._id}:`, smsError);
+                logger.error(`SMS reminder failed for appointment ${appointment._id}:`, smsError);
                 // Continue even if SMS fails
               }
             }
@@ -86,25 +87,25 @@ export function startAppointmentReminderJob() {
             await appointment.save();
 
             totalSuccess++;
-            console.log(`Sent ${hoursBeforeAppointment}h reminder for appointment ${appointment._id}`);
+            logger.info(`Sent ${hoursBeforeAppointment}h reminder for appointment ${appointment._id}`);
           } catch (error) {
             totalFail++;
-            console.error(`Failed to send reminder for appointment ${appointment._id}:`, error);
+            logger.error(`Failed to send reminder for appointment ${appointment._id}:`, error);
           }
         }
       }
 
       if (totalSuccess > 0 || totalFail > 0) {
-        console.log(
+        logger.info(
           `Appointment reminder job complete: ${totalSuccess} sent, ${totalFail} failed`
         );
       }
     } catch (error) {
-      console.error("Error in appointment reminder job:", error);
+      logger.error("Error in appointment reminder job:", error);
     }
   });
 
-  console.log("Appointment reminder job scheduled (runs hourly)");
+  logger.info("Appointment reminder job scheduled (runs hourly)");
 }
 
 /**
@@ -114,14 +115,14 @@ export function startAppointmentReminderJob() {
 export function startFollowUpReminderJob() {
   // Run daily at 10:00 AM
   cron.schedule("0 10 * * *", async () => {
-    console.log("Running follow-up reminder job...");
+    logger.info("Running follow-up reminder job...");
 
     try {
       // Get settings
       const settings = await Settings.findOne();
 
       if (!settings || !settings.reminderSettings?.followUpReminders?.enabled) {
-        console.log("Follow-up reminders are disabled in settings");
+        logger.info("Follow-up reminders are disabled in settings");
         return;
       }
 
@@ -149,7 +150,7 @@ export function startFollowUpReminderJob() {
         .populate("customerId", "name email")
         .populate("assignedTo", "name");
 
-      console.log(`Found ${completedAppointments.length} appointments for follow-up`);
+      logger.info(`Found ${completedAppointments.length} appointments for follow-up`);
 
       let successCount = 0;
       let failCount = 0;
@@ -164,22 +165,22 @@ export function startFollowUpReminderJob() {
           await appointment.save();
 
           successCount++;
-          console.log(`Sent follow-up for appointment ${appointment._id}`);
+          logger.info(`Sent follow-up for appointment ${appointment._id}`);
         } catch (error) {
           failCount++;
-          console.error(`Failed to send follow-up for appointment ${appointment._id}:`, error);
+          logger.error(`Failed to send follow-up for appointment ${appointment._id}:`, error);
         }
       }
 
-      console.log(
+      logger.info(
         `Follow-up reminder job complete: ${successCount} sent, ${failCount} failed`
       );
     } catch (error) {
-      console.error("Error in follow-up reminder job:", error);
+      logger.error("Error in follow-up reminder job:", error);
     }
   });
 
-  console.log("Follow-up reminder job scheduled (runs daily at 10:00 AM)");
+  logger.info("Follow-up reminder job scheduled (runs daily at 10:00 AM)");
 }
 
 /**
@@ -207,7 +208,7 @@ export async function sendImmediateReminder(appointmentId: string) {
 
     return { success: true, message: "Reminder sent successfully" };
   } catch (error: any) {
-    console.error("Failed to send immediate reminder:", error);
+    logger.error("Failed to send immediate reminder:", error);
     throw new Error(error.message || "Failed to send reminder");
   }
 }

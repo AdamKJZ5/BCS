@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import useModal from "../hooks/useModal";
 
 interface LineItem {
   description: string;
@@ -19,14 +20,13 @@ const CreateInvoiceFromAppointmentModal: React.FC<CreateInvoiceFromAppointmentMo
   onSuccess,
   token,
 }) => {
+  const modal = useModal();
   const [lineItems, setLineItems] = useState<LineItem[]>([
     { description: "", quantity: 1, unitPrice: 0 },
   ]);
   const [taxRate, setTaxRate] = useState(10.5); // Default WA sales tax
   const [dueInDays, setDueInDays] = useState(30);
   const [notes, setNotes] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const addLineItem = () => {
     setLineItems([...lineItems, { description: "", quantity: 1, unitPrice: 0 }]);
@@ -57,46 +57,41 @@ const CreateInvoiceFromAppointmentModal: React.FC<CreateInvoiceFromAppointmentMo
   const handleSubmit = async () => {
     // Validate
     if (lineItems.some((item) => !item.description || item.unitPrice <= 0)) {
-      setError("Please fill in all line items with valid amounts");
+      modal.setError("Please fill in all line items with valid amounts");
       return;
     }
 
-    setLoading(true);
-    setError("");
+    await modal.handleSubmit(
+      async () => {
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
-    try {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+        const response = await fetch(
+          `${API_BASE}/appointments/${appointment._id}/create-invoice`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              lineItems,
+              taxRate,
+              dueInDays,
+              notes,
+            }),
+          }
+        );
 
-      const response = await fetch(
-        `${API_BASE}/appointments/${appointment._id}/create-invoice`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            lineItems,
-            taxRate,
-            dueInDays,
-            notes,
-          }),
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to create invoice");
         }
-      );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to create invoice");
-      }
-
-      alert("Invoice created successfully!");
-      onSuccess();
-      onClose();
-    } catch (err: any) {
-      setError(err.message || "Failed to create invoice");
-    } finally {
-      setLoading(false);
-    }
+        alert("Invoice created successfully!");
+        return response.json();
+      },
+      { onSuccess }
+    );
   };
 
   return (
@@ -228,7 +223,7 @@ const CreateInvoiceFromAppointmentModal: React.FC<CreateInvoiceFromAppointmentMo
             </div>
           </div>
 
-          {error && <div style={styles.error}>{error}</div>}
+          {modal.error && <div style={styles.error}>{modal.error}</div>}
         </div>
 
         <div style={styles.footer}>
@@ -237,13 +232,13 @@ const CreateInvoiceFromAppointmentModal: React.FC<CreateInvoiceFromAppointmentMo
           </button>
           <button
             onClick={handleSubmit}
-            disabled={loading}
+            disabled={modal.loading}
             style={{
               ...styles.confirmButton,
-              ...(loading && styles.disabledButton),
+              ...(modal.loading && styles.disabledButton),
             }}
           >
-            {loading ? "Creating Invoice..." : "Create Invoice"}
+            {modal.loading ? "Creating Invoice..." : "Create Invoice"}
           </button>
         </div>
       </div>

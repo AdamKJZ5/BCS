@@ -12,6 +12,7 @@ import RescheduleModal from "../../components/RescheduleModal";
 import AddVehicleModal from "../../components/AddVehicleModal";
 import EditVehicleModal from "../../components/EditVehicleModal";
 import AppointmentPhotoUpload from "../../components/AppointmentPhotoUpload";
+import AppointmentsCalendar from "../../components/AppointmentsCalendar";
 
 const Dashboard = () => {
   const [repairs, setRepairs] = useState<Repair[]>([]);
@@ -28,6 +29,7 @@ const Dashboard = () => {
   const [reschedulingAppointment, setReschedulingAppointment] = useState<Appointment | null>(null);
   const [showAddVehicleModal, setShowAddVehicleModal] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
+  const [appointmentsView, setAppointmentsView] = useState<'list' | 'calendar'>('list');
   const navigate = useNavigate();
   const { token, isAuthenticated, logout } = useAuth();
 
@@ -43,11 +45,11 @@ const Dashboard = () => {
   const fetchData = async () => {
     try {
       const [repairsData, invoicesData, appointmentsData, vehiclesData, serviceRecordsData] = await Promise.all([
-        getMyRepairs(token!),
+        getMyRepairs(),
         getMyInvoices(),
-        getMyAppointments(token!),
-        getMyVehicles(token!),
-        getMyServiceRecords(token!)
+        getMyAppointments(),
+        getMyVehicles(),
+        getMyServiceRecords()
       ]);
       setRepairs(repairsData);
       setInvoices(invoicesData);
@@ -104,7 +106,7 @@ const Dashboard = () => {
 
     setCancellingAppointment(appointmentId);
     try {
-      await cancelAppointment(appointmentId, reason, token!);
+      await cancelAppointment(appointmentId, reason);
       // Refresh appointments
       await fetchData();
       alert("Appointment cancelled successfully");
@@ -601,8 +603,28 @@ const Dashboard = () => {
 
         {activeTab === "appointments" && appointments.length > 0 && (
           <div style={styles.repairsGrid}>
-            {/* Export All Button */}
-            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1.5rem" }}>
+            {/* View Toggle and Export Buttons */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                <button
+                  onClick={() => setAppointmentsView('list')}
+                  style={{
+                    ...styles.viewToggleButton,
+                    ...(appointmentsView === 'list' ? styles.viewToggleButtonActive : {}),
+                  }}
+                >
+                  📋 List View
+                </button>
+                <button
+                  onClick={() => setAppointmentsView('calendar')}
+                  style={{
+                    ...styles.viewToggleButton,
+                    ...(appointmentsView === 'calendar' ? styles.viewToggleButtonActive : {}),
+                  }}
+                >
+                  📅 Calendar View
+                </button>
+              </div>
               <button
                 onClick={handleExportAllAppointments}
                 style={{
@@ -623,8 +645,22 @@ const Dashboard = () => {
               </button>
             </div>
 
-            {/* Upcoming Appointments */}
-            {appointments.filter((apt) => ["scheduled", "confirmed", "in_progress"].includes(apt.status)).length > 0 && (
+            {/* Calendar View */}
+            {appointmentsView === 'calendar' && (
+              <AppointmentsCalendar
+                appointments={appointments}
+                onSelectAppointment={() => {
+                  // Show appointment details - switch to list view
+                  setAppointmentsView('list');
+                }}
+              />
+            )}
+
+            {/* List View */}
+            {appointmentsView === 'list' && (
+              <>
+                {/* Upcoming Appointments */}
+                {appointments.filter((apt) => ["scheduled", "confirmed", "in_progress"].includes(apt.status)).length > 0 && (
               <div>
                 <h2 style={{ fontSize: "1.5rem", marginBottom: "1rem", color: "#0047AB" }}>
                   Upcoming Appointments
@@ -879,6 +915,8 @@ const Dashboard = () => {
                 </div>
               </div>
             )}
+              </>
+            )}
           </div>
         )}
 
@@ -938,6 +976,9 @@ const Dashboard = () => {
                   >
                     {vehicle.isPrimary && (
                       <div style={styles.primaryBadge}>⭐ Primary Vehicle</div>
+                    )}
+                    {vehicle.isSecondary && (
+                      <div style={styles.secondaryBadge}>⭐ Secondary Vehicle</div>
                     )}
 
                     <div style={styles.vehicleHeader}>
@@ -1153,11 +1194,19 @@ const Dashboard = () => {
               setVehicles((prev) =>
                 prev.map((v) => (v._id === updatedVehicle._id ? updatedVehicle : v))
               );
-              // If the updated vehicle is now primary, unset others
+              // If the updated vehicle is now primary, unset primary/secondary for others
               if (updatedVehicle.isPrimary) {
                 setVehicles((prev) =>
                   prev.map((v) =>
                     v._id === updatedVehicle._id ? v : { ...v, isPrimary: false }
+                  )
+                );
+              }
+              // If the updated vehicle is now secondary, unset secondary/primary for others
+              if (updatedVehicle.isSecondary) {
+                setVehicles((prev) =>
+                  prev.map((v) =>
+                    v._id === updatedVehicle._id ? v : { ...v, isSecondary: false }
                   )
                 );
               }
@@ -1414,6 +1463,33 @@ const styles = {
     borderRadius: "20px",
     fontSize: "0.85rem",
     fontWeight: "bold",
+  },
+  secondaryBadge: {
+    position: "absolute" as const,
+    top: "1rem",
+    right: "1rem",
+    backgroundColor: "#17a2b8",
+    color: "#fff",
+    padding: "0.375rem 0.75rem",
+    borderRadius: "20px",
+    fontSize: "0.85rem",
+    fontWeight: "bold",
+  },
+  viewToggleButton: {
+    padding: "0.75rem 1.5rem",
+    backgroundColor: "#fff",
+    color: "#666",
+    border: "2px solid #e0e0e0",
+    borderRadius: "4px",
+    cursor: "pointer",
+    fontSize: "1rem",
+    fontWeight: "bold",
+    transition: "all 0.3s",
+  },
+  viewToggleButtonActive: {
+    backgroundColor: "#0047AB",
+    color: "#fff",
+    borderColor: "#0047AB",
   },
   vehicleHeader: {
     marginBottom: "1rem",

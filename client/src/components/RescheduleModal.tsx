@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import DatePicker from "./DatePicker";
 import TimeSlotSelector from "./TimeSlotSelector";
 import { TimeSlot, rescheduleAppointment } from "../api/appointments";
+import useModal from "../hooks/useModal";
 
 interface RescheduleModalProps {
   appointment: any;
@@ -14,32 +15,25 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
   appointment,
   onClose,
   onSuccess,
-  token,
+  token: _token,
 }) => {
+  const modal = useModal();
   const [newDate, setNewDate] = useState<Date | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const handleReschedule = async () => {
     if (!selectedSlot) {
-      setError("Please select a new date and time");
+      modal.setError("Please select a new date and time");
       return;
     }
 
-    setLoading(true);
-    setError("");
-
-    try {
-      await rescheduleAppointment(appointment._id, selectedSlot.startTime, token);
-      alert("Appointment rescheduled successfully!");
-      onSuccess();
-      onClose();
-    } catch (err: any) {
-      setError(err.message || "Failed to reschedule appointment");
-    } finally {
-      setLoading(false);
-    }
+    await modal.handleSubmit(
+      async () => {
+        await rescheduleAppointment(appointment._id, selectedSlot.startTime);
+        alert("Appointment rescheduled successfully!");
+      },
+      { onSuccess }
+    );
   };
 
   const currentDate = new Date(appointment.startTime);
@@ -107,7 +101,7 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
             </div>
           )}
 
-          {error && <div style={styles.error}>{error}</div>}
+          {modal.error && <div style={styles.error}>{modal.error}</div>}
         </div>
 
         <div style={styles.footer}>
@@ -116,13 +110,13 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
           </button>
           <button
             onClick={handleReschedule}
-            disabled={!selectedSlot || loading}
+            disabled={!selectedSlot || modal.loading}
             style={{
               ...styles.confirmButton,
-              ...((!selectedSlot || loading) && styles.disabledButton),
+              ...((!selectedSlot || modal.loading) && styles.disabledButton),
             }}
           >
-            {loading ? "Rescheduling..." : "Confirm Reschedule"}
+            {modal.loading ? "Rescheduling..." : "Confirm Reschedule"}
           </button>
         </div>
       </div>

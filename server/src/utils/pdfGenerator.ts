@@ -3,9 +3,22 @@ import { IInvoice } from '../models/Invoice';
 import fs from 'fs';
 import path from 'path';
 
-interface InvoiceData extends Omit<IInvoice, keyof Document> {
+interface InvoiceData {
   _id: any;
+  invoiceNumber: string;
   customerId: any;
+  lineItems: Array<{ description: string; quantity: number; unitPrice: number; total: number }>;
+  subtotal: number;
+  taxRate: number;
+  taxAmount: number;
+  total: number;
+  amountPaid: number;
+  amountDue: number;
+  status: string;
+  issueDate: Date;
+  dueDate: Date;
+  payments?: Array<{ amount: number; method: string; paidAt: Date; notes?: string }>;
+  notes?: string;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -64,7 +77,7 @@ export const generateInvoicePDF = async (
         .fontSize(10)
         .font('Helvetica')
         .text(`Invoice #: ${invoice.invoiceNumber}`, 400, 80, { align: 'right' })
-        .text(`Date: ${new Date(invoice.invoiceDate).toLocaleDateString()}`, 400, 93, {
+        .text(`Date: ${new Date(invoice.issueDate).toLocaleDateString()}`, 400, 93, {
           align: 'right',
         })
         .text(`Due Date: ${new Date(invoice.dueDate).toLocaleDateString()}`, 400, 106, {
@@ -143,7 +156,7 @@ export const generateInvoicePDF = async (
       let yPosition = tableTop + 30;
       doc.fontSize(9).font('Helvetica');
 
-      invoice.items.forEach((item, index) => {
+      invoice.lineItems.forEach((item, index) => {
         // Check if we need a new page
         if (yPosition > 700) {
           doc.addPage();
@@ -164,7 +177,7 @@ export const generateInvoicePDF = async (
         yPosition += 30;
 
         // Add separator line
-        if (index < invoice.items.length - 1) {
+        if (index < invoice.lineItems.length - 1) {
           doc
             .strokeColor('#F3F4F6')
             .lineWidth(0.5)
@@ -192,21 +205,11 @@ export const generateInvoicePDF = async (
       // Tax
       doc
         .text(`Tax (${invoice.taxRate}%):`, summaryX, yPosition)
-        .text(`$${invoice.tax.toFixed(2)}`, summaryX + 100, yPosition, {
+        .text(`$${invoice.taxAmount.toFixed(2)}`, summaryX + 100, yPosition, {
           align: 'right',
         });
 
       yPosition += 20;
-
-      // Discount (if any)
-      if (invoice.discount > 0) {
-        doc
-          .text('Discount:', summaryX, yPosition)
-          .text(`-$${invoice.discount.toFixed(2)}`, summaryX + 100, yPosition, {
-            align: 'right',
-          });
-        yPosition += 20;
-      }
 
       // Total line
       doc

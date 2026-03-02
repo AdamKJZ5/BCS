@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import DatePicker from "./DatePicker";
 import TimeSlotSelector from "./TimeSlotSelector";
 import { TimeSlot } from "../api/appointments";
+import useModal from "../hooks/useModal";
 
 interface CreateAppointmentModalProps {
   onClose: () => void;
@@ -14,11 +15,10 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
   onSuccess,
   token,
 }) => {
+  const modal = useModal();
   const [appointmentMode, setAppointmentMode] = useState<"customer" | "private">("customer");
   const [customers, setCustomers] = useState<any[]>([]);
   const [employees, setEmployees] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   // Form fields
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
@@ -58,61 +58,56 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
   const handleSubmit = async () => {
     if (appointmentMode === "customer") {
       if (!selectedCustomerId || !appointmentType || !selectedSlot) {
-        setError("Please fill in all required fields");
+        modal.setError("Please fill in all required fields");
         return;
       }
     } else {
       if (!title || !selectedSlot) {
-        setError("Please fill in all required fields");
+        modal.setError("Please fill in all required fields");
         return;
       }
     }
 
-    setLoading(true);
-    setError("");
+    await modal.handleSubmit(
+      async () => {
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
-    try {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+        const payload: any = {
+          startTime: selectedSlot!.startTime,
+          duration,
+        };
 
-      const payload: any = {
-        startTime: selectedSlot!.startTime,
-        duration,
-      };
+        if (appointmentMode === "customer") {
+          payload.customerId = selectedCustomerId;
+          payload.appointmentType = appointmentType;
+          payload.description = description;
+          if (assignedTo) payload.assignedTo = assignedTo;
+        } else {
+          payload.title = title;
+          payload.description = description;
+          payload.isPrivate = true;
+          if (assignedTo) payload.assignedTo = assignedTo;
+        }
 
-      if (appointmentMode === "customer") {
-        payload.customerId = selectedCustomerId;
-        payload.appointmentType = appointmentType;
-        payload.description = description;
-        if (assignedTo) payload.assignedTo = assignedTo;
-      } else {
-        payload.title = title;
-        payload.description = description;
-        payload.isPrivate = true;
-        if (assignedTo) payload.assignedTo = assignedTo;
-      }
+        const response = await fetch(`${API_BASE}/appointments/admin`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
 
-      const response = await fetch(`${API_BASE}/appointments/admin`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to create appointment");
+        }
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to create appointment");
-      }
-
-      alert("Appointment created successfully!");
-      onSuccess();
-      onClose();
-    } catch (err: any) {
-      setError(err.message || "Failed to create appointment");
-    } finally {
-      setLoading(false);
-    }
+        alert("Appointment created successfully!");
+        return response.json();
+      },
+      { onSuccess }
+    );
   };
 
   return (
@@ -266,7 +261,7 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
             </div>
           )}
 
-          {error && <div style={styles.error}>{error}</div>}
+          {modal.error && <div style={styles.error}>{modal.error}</div>}
         </div>
 
         <div style={styles.footer}>
@@ -275,13 +270,13 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
           </button>
           <button
             onClick={handleSubmit}
-            disabled={loading}
+            disabled={modal.loading}
             style={{
               ...styles.confirmButton,
-              ...(loading && styles.disabledButton),
+              ...(modal.loading && styles.disabledButton),
             }}
           >
-            {loading ? "Creating..." : "Create Appointment"}
+            {modal.loading ? "Creating..." : "Create Appointment"}
           </button>
         </div>
       </div>

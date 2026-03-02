@@ -1,12 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
-const getAuthHeaders = () => {
-  const token = localStorage.getItem("token");
-  return {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json',
-  };
-};
+import apiClient from '../utils/apiClient';
 
 export interface BusinessInfo {
   name: string;
@@ -80,43 +72,28 @@ export interface Settings {
 }
 
 export async function getSettings(): Promise<Settings> {
-  const res = await fetch(`${API_BASE}/api/admin/settings`, {
-    headers: getAuthHeaders(),
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to fetch settings');
+  try {
+    const response = await apiClient.get('/admin/settings');
+    return response.data.settings;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch settings');
   }
-
-  const data = await res.json();
-  return data.settings;
 }
 
 export async function updateSettings(updates: Partial<Settings>): Promise<Settings> {
-  const res = await fetch(`${API_BASE}/api/admin/settings`, {
-    method: 'PUT',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(updates),
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to update settings');
+  try {
+    const response = await apiClient.put('/admin/settings', updates);
+    return response.data.settings;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to update settings');
   }
-
-  const data = await res.json();
-  return data.settings;
 }
 
 export async function initializeReminderSettings(): Promise<Settings> {
-  const res = await fetch(`${API_BASE}/api/admin/settings/initialize-reminders`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to initialize reminder settings');
+  try {
+    const response = await apiClient.post('/admin/settings/initialize-reminders');
+    return response.data.settings;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to initialize reminder settings');
   }
-
-  const data = await res.json();
-  return data.settings;
 }

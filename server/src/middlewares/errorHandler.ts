@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../utils/AppError";
+import logger from "../utils/logger";
 
 export function errorHandler(
   err: any,
@@ -11,8 +12,8 @@ export function errorHandler(
   let statusCode = 500;
   let message = "Internal server error";
 
-  console.error(err);
-  
+  logger.error(err);
+
   if (err instanceof AppError) {
     statusCode = err.statusCode;
     message = err.message;

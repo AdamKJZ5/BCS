@@ -1,15 +1,16 @@
 import { Router } from "express";
 import { register, login, getMe, completeSignup, requestPasswordReset, resetPassword } from "../controllers/authController";
 import { authMiddleware } from "../middlewares/auth";
+import { authLimiter, passwordResetLimiter } from "../middlewares/rateLimiters";
 
 const router = Router();
 
 // Public routes
-router.post("/register", register);
-router.post("/login", login);
-router.post("/complete-signup", completeSignup);
-router.post("/forgot-password", requestPasswordReset);
-router.post("/reset-password", resetPassword);
+router.post("/register", authLimiter, register);
+router.post("/login", authLimiter, login);
+router.post("/complete-signup", authLimiter, completeSignup);
+router.post("/forgot-password", passwordResetLimiter, requestPasswordReset);
+router.post("/reset-password", passwordResetLimiter, resetPassword);
 
 // Protected routes
 router.get("/me", authMiddleware, getMe);

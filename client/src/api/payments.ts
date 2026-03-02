@@ -1,17 +1,10 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+import apiClient from '../utils/apiClient';
 
-const getAuthHeaders = () => {
-  const token = localStorage.getItem("token");
-  return {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json',
-  };
-};
-
-interface StripeConfigResponse {
-  success: boolean;
-  publishableKey: string;
-}
+// Keeping interface for future use
+// interface StripeConfigResponse {
+//   success: boolean;
+//   publishableKey: string;
+// }
 
 interface PaymentIntentResponse {
   success: boolean;
@@ -21,28 +14,20 @@ interface PaymentIntentResponse {
 
 // Get Stripe publishable key
 export async function getStripeConfig(): Promise<string> {
-  const res = await fetch(`${API_BASE}/api/payments/config`);
-
-  if (!res.ok) {
-    throw new Error('Failed to fetch Stripe configuration');
+  try {
+    const response = await apiClient.get('/payments/config');
+    return response.data.publishableKey;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch Stripe configuration');
   }
-
-  const result: StripeConfigResponse = await res.json();
-  return result.publishableKey;
 }
 
 // Create payment intent for invoice
 export async function createPaymentIntent(invoiceId: string): Promise<PaymentIntentResponse> {
-  const res = await fetch(`${API_BASE}/api/payments/create-payment-intent`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({ invoiceId }),
-  });
-
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.message || 'Failed to create payment intent');
+  try {
+    const response = await apiClient.post('/payments/create-payment-intent', { invoiceId });
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to create payment intent');
   }
-
-  return res.json();
 }

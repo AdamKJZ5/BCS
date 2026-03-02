@@ -422,6 +422,31 @@ const Contact = () => {
                 <li>Works with all insurance companies</li>
               </ul>
             </div>
+
+            {/* Location Map */}
+            <div style={styles.mapCard}>
+              <h3 style={styles.infoTitle}>Find Us</h3>
+              <div style={styles.mapContainer}>
+                <iframe
+                  title="Bellevue Collision Services Location"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2688.9!2d-122.1544!3d47.5841!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x54906c8c9b9b9b9b%3A0x1234567890!2s13434%20SE%2027th%20Pl%2C%20Bellevue%2C%20WA%2098005!5e0!3m2!1sen!2sus!4v1234567890"
+                  width="100%"
+                  height="300"
+                  style={styles.map}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </div>
+              <a
+                href="https://www.google.com/maps/dir/?api=1&destination=13434+SE+27th+Pl+Bellevue+WA+98005"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={styles.directionsLink}
+              >
+                📍 Get Directions
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -643,6 +668,34 @@ const styles = {
     animation: "spin 0.8s linear infinite",
     marginRight: "8px",
     verticalAlign: "middle",
+  },
+  mapCard: {
+    backgroundColor: "#fff",
+    padding: "1.5rem",
+    borderRadius: "8px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+  },
+  mapContainer: {
+    borderRadius: "8px",
+    overflow: "hidden",
+    marginBottom: "1rem",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+  },
+  map: {
+    border: "none",
+    display: "block",
+  },
+  directionsLink: {
+    display: "inline-block",
+    padding: "0.75rem 1.5rem",
+    backgroundColor: "#0047AB",
+    color: "#fff",
+    textDecoration: "none",
+    borderRadius: "4px",
+    fontWeight: "bold",
+    transition: "background-color 0.3s",
+    textAlign: "center" as const,
+    width: "100%",
   },
 };
 

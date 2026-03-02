@@ -8,6 +8,7 @@ import {
 } from "@stripe/react-stripe-js";
 import { Invoice } from "../api/invoices";
 import { getStripeConfig, createPaymentIntent } from "../api/payments";
+import useModal from "../hooks/useModal";
 
 interface PaymentModalProps {
   invoice: Invoice;
@@ -32,8 +33,7 @@ const PaymentForm = ({
 }: PaymentModalProps) => {
   const stripe = useStripe();
   const elements = useElements();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const modal = useModal();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,52 +42,47 @@ const PaymentForm = ({
       return;
     }
 
-    setIsProcessing(true);
-    setErrorMessage("");
+    await modal.handleSubmit(
+      async () => {
+        const { error } = await stripe.confirmPayment({
+          elements,
+          confirmParams: {
+            return_url: `${window.location.origin}/customer/dashboard`,
+          },
+          redirect: "if_required",
+        });
 
-    try {
-      const { error } = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: `${window.location.origin}/customer/dashboard`,
-        },
-        redirect: "if_required",
-      });
+        if (error) {
+          throw new Error(error.message || "Payment failed");
+        }
 
-      if (error) {
-        setErrorMessage(error.message || "Payment failed");
-      } else {
-        // Payment successful
-        onSuccess();
-      }
-    } catch (err: any) {
-      setErrorMessage(err.message || "An error occurred");
-    } finally {
-      setIsProcessing(false);
-    }
+        return true;
+      },
+      { onSuccess }
+    );
   };
 
   return (
     <form onSubmit={handleSubmit} style={styles.form}>
       <PaymentElement />
 
-      {errorMessage && <div style={styles.error}>{errorMessage}</div>}
+      {modal.error && <div style={styles.error}>{modal.error}</div>}
 
       <div style={styles.buttonGroup}>
         <button
           type="button"
           onClick={onClose}
-          disabled={isProcessing}
+          disabled={modal.loading}
           style={styles.cancelButton}
         >
           Cancel
         </button>
         <button
           type="submit"
-          disabled={!stripe || isProcessing}
+          disabled={!stripe || modal.loading}
           style={styles.submitButton}
         >
-          {isProcessing ? "Processing..." : `Pay $${invoice.amountDue.toFixed(2)}`}
+          {modal.loading ? "Processing..." : `Pay $${invoice.amountDue.toFixed(2)}`}
         </button>
       </div>
     </form>
@@ -95,13 +90,13 @@ const PaymentForm = ({
 };
 
 const PaymentModal = ({ invoice, onClose, onSuccess }: PaymentModalProps) => {
+  const modal = useModal();
   const [clientSecret, setClientSecret] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [stripePromiseState, setStripePromiseState] = useState<Promise<Stripe | null> | null>(null);
 
   useEffect(() => {
     const initPayment = async () => {
+      modal.setLoading(true);
       try {
         // Load Stripe
         const stripe = await getStripePromise();
@@ -111,9 +106,9 @@ const PaymentModal = ({ invoice, onClose, onSuccess }: PaymentModalProps) => {
         const response = await createPaymentIntent(invoice._id);
         setClientSecret(response.clientSecret);
       } catch (err: any) {
-        setError(err.message || "Failed to initialize payment");
+        modal.setError(err.message || "Failed to initialize payment");
       } finally {
-        setLoading(false);
+        modal.setLoading(false);
       }
     };
 
@@ -143,23 +138,23 @@ const PaymentModal = ({ invoice, onClose, onSuccess }: PaymentModalProps) => {
           </div>
         </div>
 
-        {loading && (
+        {modal.loading && (
           <div style={styles.loadingContainer}>
             <div style={styles.spinner}></div>
             <p>Loading payment form...</p>
           </div>
         )}
 
-        {error && (
+        {modal.error && (
           <div style={styles.errorContainer}>
-            <div style={styles.error}>{error}</div>
+            <div style={styles.error}>{modal.error}</div>
             <button onClick={onClose} style={styles.cancelButton}>
               Close
             </button>
           </div>
         )}
 
-        {!loading && !error && clientSecret && stripePromiseState && (
+        {!modal.loading && !modal.error && clientSecret && stripePromiseState && (
           <Elements
             stripe={stripePromiseState}
             options={{

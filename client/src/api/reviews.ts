@@ -1,12 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
-const getAuthHeaders = () => {
-  const token = localStorage.getItem("token");
-  return {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json',
-  };
-};
+import apiClient from '../utils/apiClient';
 
 export interface Review {
   _id: string;
@@ -63,34 +55,24 @@ export interface ReviewStats {
  * Create a new review (customer)
  */
 export async function createReview(data: CreateReviewData): Promise<Review> {
-  const res = await fetch(`${API_BASE}/api/reviews`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data),
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to create review');
+  try {
+    const response = await apiClient.post('/reviews', data);
+    return response.data.review;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to create review');
   }
-
-  const result = await res.json();
-  return result.review;
 }
 
 /**
  * Get customer's own reviews
  */
 export async function getMyReviews(): Promise<Review[]> {
-  const res = await fetch(`${API_BASE}/api/reviews/my-reviews`, {
-    headers: getAuthHeaders(),
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to fetch reviews');
+  try {
+    const response = await apiClient.get('/reviews/my-reviews');
+    return response.data.reviews;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch reviews');
   }
-
-  const result = await res.json();
-  return result.reviews;
 }
 
 /**
@@ -103,27 +85,23 @@ export async function getAllReviews(filters: {
   page?: number;
   limit?: number;
 }): Promise<{ reviews: Review[]; pagination: any }> {
-  const params = new URLSearchParams();
+  try {
+    const params = new URLSearchParams();
 
-  if (filters.status) params.append('status', filters.status);
-  if (filters.rating) params.append('rating', filters.rating.toString());
-  if (filters.search) params.append('search', filters.search);
-  if (filters.page) params.append('page', filters.page.toString());
-  if (filters.limit) params.append('limit', filters.limit.toString());
+    if (filters.status) params.append('status', filters.status);
+    if (filters.rating) params.append('rating', filters.rating.toString());
+    if (filters.search) params.append('search', filters.search);
+    if (filters.page) params.append('page', filters.page.toString());
+    if (filters.limit) params.append('limit', filters.limit.toString());
 
-  const res = await fetch(`${API_BASE}/api/reviews?${params.toString()}`, {
-    headers: getAuthHeaders(),
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to fetch reviews');
+    const response = await apiClient.get(`/reviews?${params.toString()}`);
+    return {
+      reviews: response.data.reviews,
+      pagination: response.data.pagination,
+    };
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch reviews');
   }
-
-  const result = await res.json();
-  return {
-    reviews: result.reviews,
-    pagination: result.pagination,
-  };
 }
 
 /**
@@ -134,20 +112,18 @@ export async function getPublicReviews(filters: {
   rating?: number;
   limit?: number;
 }): Promise<Review[]> {
-  const params = new URLSearchParams();
+  try {
+    const params = new URLSearchParams();
 
-  if (filters.featured) params.append('featured', 'true');
-  if (filters.rating) params.append('rating', filters.rating.toString());
-  if (filters.limit) params.append('limit', filters.limit.toString());
+    if (filters.featured) params.append('featured', 'true');
+    if (filters.rating) params.append('rating', filters.rating.toString());
+    if (filters.limit) params.append('limit', filters.limit.toString());
 
-  const res = await fetch(`${API_BASE}/api/reviews/public?${params.toString()}`);
-
-  if (!res.ok) {
-    throw new Error('Failed to fetch public reviews');
+    const response = await apiClient.get(`/reviews/public?${params.toString()}`);
+    return response.data.reviews;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch public reviews');
   }
-
-  const result = await res.json();
-  return result.reviews;
 }
 
 /**
@@ -158,66 +134,46 @@ export async function moderateReview(
   status: "approved" | "rejected",
   moderationNote?: string
 ): Promise<Review> {
-  const res = await fetch(`${API_BASE}/api/reviews/${id}/moderate`, {
-    method: 'PATCH',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({ status, moderationNote }),
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to moderate review');
+  try {
+    const response = await apiClient.patch(`/reviews/${id}/moderate`, { status, moderationNote });
+    return response.data.review;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to moderate review');
   }
-
-  const result = await res.json();
-  return result.review;
 }
 
 /**
  * Toggle featured status (admin)
  */
 export async function toggleFeatured(id: string): Promise<Review> {
-  const res = await fetch(`${API_BASE}/api/reviews/${id}/featured`, {
-    method: 'PATCH',
-    headers: getAuthHeaders(),
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to toggle featured status');
+  try {
+    const response = await apiClient.patch(`/reviews/${id}/featured`);
+    return response.data.review;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to toggle featured status');
   }
-
-  const result = await res.json();
-  return result.review;
 }
 
 /**
  * Respond to review (admin)
  */
 export async function respondToReview(id: string, text: string): Promise<Review> {
-  const res = await fetch(`${API_BASE}/api/reviews/${id}/respond`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({ text }),
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to respond to review');
+  try {
+    const response = await apiClient.post(`/reviews/${id}/respond`, { text });
+    return response.data.review;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to respond to review');
   }
-
-  const result = await res.json();
-  return result.review;
 }
 
 /**
  * Delete review (admin)
  */
 export async function deleteReview(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/reviews/${id}`, {
-    method: 'DELETE',
-    headers: getAuthHeaders(),
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to delete review');
+  try {
+    await apiClient.delete(`/reviews/${id}`);
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to delete review');
   }
 }
 
@@ -225,14 +181,10 @@ export async function deleteReview(id: string): Promise<void> {
  * Get review statistics (admin)
  */
 export async function getReviewStats(): Promise<ReviewStats> {
-  const res = await fetch(`${API_BASE}/api/reviews/stats`, {
-    headers: getAuthHeaders(),
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to fetch review stats');
+  try {
+    const response = await apiClient.get('/reviews/stats');
+    return response.data.stats;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch review stats');
   }
-
-  const result = await res.json();
-  return result.stats;
 }

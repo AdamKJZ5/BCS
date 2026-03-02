@@ -1,4 +1,5 @@
 import twilio from "twilio";
+import logger from "../utils/logger";
 
 // Initialize Twilio client
 let twilioClient: any = null;
@@ -11,7 +12,7 @@ try {
     );
   }
 } catch (error) {
-  console.log("⚠️ Twilio not configured - SMS notifications disabled");
+  logger.warn("Twilio not configured - SMS notifications disabled");
 }
 
 /**
@@ -20,14 +21,14 @@ try {
 export async function sendAppointmentReminderSMS(appointment: any) {
   // Skip if Twilio not configured
   if (!twilioClient || !process.env.TWILIO_PHONE_NUMBER) {
-    console.log("SMS notifications not configured, skipping");
+    logger.info("SMS notifications not configured, skipping");
     return;
   }
 
   try {
     const customer = appointment.customerId;
     if (!customer || !customer.phone) {
-      console.log("Customer phone not found, skipping SMS");
+      logger.info("Customer phone not found, skipping SMS");
       return;
     }
 
@@ -69,9 +70,9 @@ Need to reschedule? Call (425) 373-0308 or visit your dashboard.
       to: phoneNumber,
     });
 
-    console.log(`✅ SMS reminder sent to ${phoneNumber} for appointment ${appointment._id}`);
+    logger.info(`SMS reminder sent to ${phoneNumber} for appointment ${appointment._id}`);
   } catch (error) {
-    console.error("❌ Failed to send SMS reminder:", error);
+    logger.error("Failed to send SMS reminder:", error);
     // Don't throw - SMS failure shouldn't break the app
   }
 }
@@ -119,9 +120,9 @@ export async function sendAppointmentStatusSMS(appointment: any, newStatus: stri
       to: phoneNumber,
     });
 
-    console.log(`✅ SMS status update sent to ${phoneNumber} (${newStatus})`);
+    logger.info(`SMS status update sent to ${phoneNumber} (${newStatus})`);
   } catch (error) {
-    console.error("❌ Failed to send status SMS:", error);
+    logger.error("Failed to send status SMS:", error);
   }
 }
 
@@ -162,9 +163,9 @@ Due: ${new Date(invoice.dueDate).toLocaleDateString()}
       to: phoneNumber,
     });
 
-    console.log(`✅ Invoice SMS sent to ${phoneNumber}`);
+    logger.info(`Invoice SMS sent to ${phoneNumber}`);
   } catch (error) {
-    console.error("❌ Failed to send invoice SMS:", error);
+    logger.error("Failed to send invoice SMS:", error);
   }
 }
 

@@ -7,6 +7,7 @@ import {
   updateVehicle,
   deleteVehicle,
   setPrimaryVehicle,
+  setSecondaryVehicle,
 } from "../controllers/vehicleController";
 
 const router = Router();
@@ -20,5 +21,6 @@ router.post("/", createVehicle);
 router.patch("/:id", updateVehicle);
 router.delete("/:id", deleteVehicle);
 router.post("/:id/set-primary", setPrimaryVehicle);
+router.post("/:id/set-secondary", setSecondaryVehicle);
 
 export default router;

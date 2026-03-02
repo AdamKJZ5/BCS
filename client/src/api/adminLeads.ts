@@ -1,12 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
-const getAuthHeaders = () => {
-  const token = localStorage.getItem("token");
-  return {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json',
-  };
-};
+import apiClient from '../utils/apiClient';
 
 interface Lead {
   _id: string;
@@ -65,53 +57,43 @@ export interface LeadFilters {
 }
 
 export async function fetchLeads(filters: LeadFilters = {}): Promise<LeadsResponse> {
-  const params = new URLSearchParams();
+  try {
+    const params = new URLSearchParams();
 
-  params.append("page", (filters.page || 1).toString());
-  params.append("limit", (filters.limit || 10).toString());
+    params.append("page", (filters.page || 1).toString());
+    params.append("limit", (filters.limit || 10).toString());
 
-  if (filters.search) params.append("search", filters.search);
-  if (filters.status) params.append("status", filters.status);
-  if (filters.repairStage) params.append("repairStage", filters.repairStage);
-  if (filters.startDate) params.append("startDate", filters.startDate);
-  if (filters.endDate) params.append("endDate", filters.endDate);
-  if (filters.sortBy) params.append("sortBy", filters.sortBy);
-  if (filters.sortOrder) params.append("sortOrder", filters.sortOrder);
+    if (filters.search) params.append("search", filters.search);
+    if (filters.status) params.append("status", filters.status);
+    if (filters.repairStage) params.append("repairStage", filters.repairStage);
+    if (filters.startDate) params.append("startDate", filters.startDate);
+    if (filters.endDate) params.append("endDate", filters.endDate);
+    if (filters.sortBy) params.append("sortBy", filters.sortBy);
+    if (filters.sortOrder) params.append("sortOrder", filters.sortOrder);
 
-  const res = await fetch(`${API_BASE}/api/admin/leads?${params.toString()}`, {
-    headers: getAuthHeaders(),
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to fetch leads');
+    const response = await apiClient.get(`/admin/leads?${params.toString()}`);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch leads');
   }
-
-  return res.json();
 }
 
 export async function updateLeadStatus(
   id: string,
   status: 'new' | 'contacted' | 'closed'
 ): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/admin/leads/${id}/status`, {
-    method: 'PATCH',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({ status }),
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to update status');
+  try {
+    await apiClient.patch(`/admin/leads/${id}/status`, { status });
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to update status');
   }
 }
 
 export async function archiveLead(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/admin/leads/${id}`, {
-    method: 'DELETE',
-    headers: getAuthHeaders(),
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to archive lead');
+  try {
+    await apiClient.delete(`/admin/leads/${id}`);
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to archive lead');
   }
 }
 
@@ -133,18 +115,12 @@ export async function updateRepairTracking(
     };
   }
 ): Promise<Lead> {
-  const res = await fetch(`${API_BASE}/api/admin/leads/${id}/tracking`, {
-    method: 'PATCH',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data),
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to update repair tracking');
+  try {
+    const response = await apiClient.patch(`/admin/leads/${id}/tracking`, data);
+    return response.data.lead;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to update repair tracking');
   }
-
-  const result = await res.json();
-  return result.lead;
 }
 
 export async function addProgressNote(
@@ -152,29 +128,19 @@ export async function addProgressNote(
   note: string,
   createdBy: string
 ): Promise<Lead> {
-  const res = await fetch(`${API_BASE}/api/admin/leads/${id}/notes`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({ note, createdBy }),
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to add progress note');
+  try {
+    const response = await apiClient.post(`/admin/leads/${id}/notes`, { note, createdBy });
+    return response.data.lead;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to add progress note');
   }
-
-  const result = await res.json();
-  return result.lead;
 }
 
 export async function resendSignupEmail(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/admin/leads/${id}/resend-signup`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-  });
-
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.message || 'Failed to resend signup email');
+  try {
+    await apiClient.post(`/admin/leads/${id}/resend-signup`);
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to resend signup email');
   }
 }
 

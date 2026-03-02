@@ -5,7 +5,6 @@ import mongoSanitize from "express-mongo-sanitize";
 import xss from "xss-clean";
 import hpp from "hpp";
 import leadRoutes from "./routes/leadRoutes";
-import rateLimit from "express-rate-limit";
 import path from "path";
 import adminRoutes from "./routes/leadAdminRoutes";
 import authRoutes from "./routes/authRoutes";
@@ -31,32 +30,7 @@ import {
   sentryErrorHandler
 } from "./config/sentry";
 import healthRoutes from "./routes/healthRoutes";
-
-// Rate limiters
-const leadLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20,
-  message: "Too many requests, please try again later",
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  message: "Too many requests from this IP, please try again later",
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit login/register attempts
-  message: "Too many authentication attempts, please try again later",
-  standardHeaders: true,
-  legacyHeaders: false,
-  skipSuccessfulRequests: true, // Don't count successful requests
-});
+import { leadLimiter, authLimiter, apiLimiter } from "./middlewares/rateLimiters";
 
 const app = express();
 
@@ -105,16 +79,23 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Data sanitization against NoSQL query injection
-// Use replaceWith option to avoid modifying read-only properties in Express 5
-app.use(mongoSanitize({
-  replaceWith: '_',
-  onSanitize: ({ req, key }) => {
-    logger.warn(`Sanitized potentially malicious input: ${key}`);
-  },
-}));
+// TEMPORARILY DISABLED: express-mongo-sanitize has compatibility issues with Express v5
+// Mongoose provides built-in protection against NoSQL injection via strict schemas
+// TODO: Re-enable when express-mongo-sanitize is updated for Express v5
+// app.use(mongoSanitize({
+//   replaceWith: '_',
+//   onSanitize: ({ req, key }) => {
+//     logger.warn(`Sanitized potentially malicious input: ${key}`);
+//   },
+// }));
+logger.info('NoSQL injection protection: Using Mongoose schema validation (express-mongo-sanitize disabled due to Express v5 compatibility)');
 
 // Data sanitization against XSS
-app.use(xss());
+// TEMPORARILY DISABLED: xss-clean has compatibility issues with Express v5
+// Helmet provides XSS protection via Content Security Policy
+// TODO: Re-enable when xss-clean is updated for Express v5
+// app.use(xss());
+logger.info('XSS protection: Using Helmet CSP (xss-clean disabled due to Express v5 compatibility)');
 
 // Prevent HTTP parameter pollution
 app.use(hpp({

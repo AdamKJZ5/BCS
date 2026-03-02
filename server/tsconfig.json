@@ -7,19 +7,21 @@
     "outDir": "dist",
 
     "types": ["jest", "node"],
+    "typeRoots": ["./node_modules/@types", "./src/types"],
 
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
 
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-
+    "exactOptionalPropertyTypes": false,
+    "resolveJsonModule": true,
 
     "strict": true,
     "jsx": "react-jsx",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true
-  }
+  },
+  "exclude": ["src/__tests__/**/*", "node_modules"]
 }

@@ -1,6 +1,4 @@
-import axios from "axios";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+import apiClient, { API_BASE } from "../utils/apiClient";
 
 export interface TimeSlot {
   startTime: string;
@@ -69,10 +67,7 @@ export async function getAvailability(
       params.employeeId = employeeId;
     }
 
-    const response = await axios.get(`${API_BASE}/appointments/availability`, {
-      params,
-    });
-
+    const response = await apiClient.get('/appointments/availability', { params });
     return response.data;
   } catch (error: any) {
     console.error("Error fetching availability:", error);
@@ -82,18 +77,13 @@ export async function getAvailability(
 
 /**
  * Create a new appointment (customer)
+ * Note: Auth token automatically added by apiClient interceptor
  */
 export async function createAppointment(
-  data: CreateAppointmentData,
-  token: string
+  data: CreateAppointmentData
 ): Promise<Appointment> {
   try {
-    const response = await axios.post(`${API_BASE}/appointments`, data, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
+    const response = await apiClient.post('/appointments', data);
     return response.data;
   } catch (error: any) {
     console.error("Error creating appointment:", error);
@@ -104,14 +94,9 @@ export async function createAppointment(
 /**
  * Get customer's appointments
  */
-export async function getMyAppointments(token: string): Promise<Appointment[]> {
+export async function getMyAppointments(): Promise<Appointment[]> {
   try {
-    const response = await axios.get(`${API_BASE}/appointments/my-appointments`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
+    const response = await apiClient.get('/appointments/my-appointments');
     return response.data;
   } catch (error: any) {
     console.error("Error fetching appointments:", error);
@@ -124,16 +109,10 @@ export async function getMyAppointments(token: string): Promise<Appointment[]> {
  */
 export async function updateAppointment(
   id: string,
-  updates: { status?: string },
-  token: string
+  updates: { status?: string }
 ): Promise<Appointment> {
   try {
-    const response = await axios.patch(`${API_BASE}/appointments/${id}`, updates, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
+    const response = await apiClient.patch(`/appointments/${id}`, updates);
     return response.data;
   } catch (error: any) {
     console.error("Error updating appointment:", error);
@@ -146,14 +125,10 @@ export async function updateAppointment(
  */
 export async function cancelAppointment(
   id: string,
-  reason: string,
-  token: string
+  reason: string
 ): Promise<void> {
   try {
-    await axios.delete(`${API_BASE}/appointments/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+    await apiClient.delete(`/appointments/${id}`, {
       data: { cancellationReason: reason },
     });
   } catch (error: any) {
@@ -167,20 +142,13 @@ export async function cancelAppointment(
  */
 export async function rescheduleAppointment(
   id: string,
-  newStartTime: string,
-  token: string
+  newStartTime: string
 ): Promise<Appointment> {
   try {
-    const response = await axios.patch(
-      `${API_BASE}/appointments/${id}`,
-      { startTime: newStartTime },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+    const response = await apiClient.patch(
+      `/appointments/${id}`,
+      { startTime: newStartTime }
     );
-
     return response.data;
   } catch (error: any) {
     console.error("Error rescheduling appointment:", error);
@@ -193,8 +161,7 @@ export async function rescheduleAppointment(
  */
 export async function uploadAppointmentPhotos(
   appointmentId: string,
-  files: File[],
-  token: string
+  files: File[]
 ): Promise<{ success: boolean; photos: string[]; appointment: Appointment }> {
   try {
     const formData = new FormData();
@@ -202,12 +169,11 @@ export async function uploadAppointmentPhotos(
       formData.append("photos", file);
     });
 
-    const response = await axios.post(
-      `${API_BASE}/appointments/${appointmentId}/photos`,
+    const response = await apiClient.post(
+      `/appointments/${appointmentId}/photos`,
       formData,
       {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       }
@@ -225,19 +191,12 @@ export async function uploadAppointmentPhotos(
  */
 export async function deleteAppointmentPhoto(
   appointmentId: string,
-  photoIndex: number,
-  token: string
+  photoIndex: number
 ): Promise<{ success: boolean; appointment: Appointment }> {
   try {
-    const response = await axios.delete(
-      `${API_BASE}/appointments/${appointmentId}/photos/${photoIndex}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+    const response = await apiClient.delete(
+      `/appointments/${appointmentId}/photos/${photoIndex}`
     );
-
     return response.data;
   } catch (error: any) {
     console.error("Error deleting photo:", error);

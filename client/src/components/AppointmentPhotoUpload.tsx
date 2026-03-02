@@ -1,5 +1,6 @@
-import { useState, useRef } from "react";
+import { useRef } from "react";
 import { uploadAppointmentPhotos, deleteAppointmentPhoto } from "../api/appointments";
+import useModal from "../hooks/useModal";
 
 interface AppointmentPhotoUploadProps {
   appointmentId: string;
@@ -12,12 +13,11 @@ interface AppointmentPhotoUploadProps {
 const AppointmentPhotoUpload: React.FC<AppointmentPhotoUploadProps> = ({
   appointmentId,
   photos = [],
-  token,
+  token: _token,
   onPhotosUpdate,
   readOnly = false,
 }) => {
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState("");
+  const modal = useModal();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
@@ -26,44 +26,50 @@ const AppointmentPhotoUpload: React.FC<AppointmentPhotoUploadProps> = ({
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    setError("");
-    setUploading(true);
+    const result = await modal.handleSubmit(
+      async () => {
+        const fileArray = Array.from(files);
 
-    try {
-      const fileArray = Array.from(files);
-
-      // Validate file types and sizes
-      for (const file of fileArray) {
-        if (!file.type.startsWith("image/")) {
-          throw new Error(`${file.name} is not an image file`);
+        // Validate file types and sizes
+        for (const file of fileArray) {
+          if (!file.type.startsWith("image/")) {
+            throw new Error(`${file.name} is not an image file`);
+          }
+          if (file.size > 10 * 1024 * 1024) {
+            throw new Error(`${file.name} exceeds 10MB limit`);
+          }
         }
-        if (file.size > 10 * 1024 * 1024) {
-          throw new Error(`${file.name} exceeds 10MB limit`);
+
+        const uploadResult = await uploadAppointmentPhotos(appointmentId, fileArray);
+        return uploadResult;
+      },
+      {
+        onSuccess: () => {
+          // Clear file input
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
         }
       }
+    );
 
-      const result = await uploadAppointmentPhotos(appointmentId, fileArray, token);
+    if (result) {
       onPhotosUpdate(result.appointment.photos || []);
-
-      // Clear file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    } catch (err: any) {
-      setError(err.message || "Failed to upload photos");
-    } finally {
-      setUploading(false);
     }
   };
 
   const handleDeletePhoto = async (index: number) => {
     if (!confirm("Are you sure you want to delete this photo?")) return;
 
-    try {
-      const result = await deleteAppointmentPhoto(appointmentId, index, token);
+    const result = await modal.handleSubmit(
+      async () => {
+        const deleteResult = await deleteAppointmentPhoto(appointmentId, index);
+        return deleteResult;
+      }
+    );
+
+    if (result) {
       onPhotosUpdate(result.appointment.photos || []);
-    } catch (err: any) {
-      setError(err.message || "Failed to delete photo");
     }
   };
 
@@ -74,15 +80,15 @@ const AppointmentPhotoUpload: React.FC<AppointmentPhotoUploadProps> = ({
         {!readOnly && (
           <button
             onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
+            disabled={modal.loading}
             style={styles.uploadButton}
           >
-            {uploading ? "Uploading..." : "+ Add Photos"}
+            {modal.loading ? "Uploading..." : "+ Add Photos"}
           </button>
         )}
       </div>
 
-      {error && <div style={styles.error}>{error}</div>}
+      {modal.error && <div style={styles.error}>{modal.error}</div>}
 
       <input
         ref={fileInputRef}

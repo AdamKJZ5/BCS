@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import apiClient from '../utils/apiClient';
 
 export interface Repair {
   _id: string;
@@ -33,32 +33,20 @@ export interface Repair {
   };
 }
 
-export const getMyRepairs = async (token: string): Promise<Repair[]> => {
-  const response = await fetch(`${API_BASE_URL}/api/customer/repairs`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch repairs");
+export const getMyRepairs = async (): Promise<Repair[]> => {
+  try {
+    const response = await apiClient.get('/customer/repairs');
+    return response.data.repairs;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "Failed to fetch repairs");
   }
-
-  const data = await response.json();
-  return data.repairs;
 };
 
-export const getRepairById = async (token: string, id: string): Promise<Repair> => {
-  const response = await fetch(`${API_BASE_URL}/api/customer/repairs/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch repair");
+export const getRepairById = async (id: string): Promise<Repair> => {
+  try {
+    const response = await apiClient.get(`/customer/repairs/${id}`);
+    return response.data.repair;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "Failed to fetch repair");
   }
-
-  const data = await response.json();
-  return data.repair;
 };

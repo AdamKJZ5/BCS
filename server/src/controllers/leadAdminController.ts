@@ -5,11 +5,13 @@ import { AppError } from "../utils/AppError";
 import { sendSignupInviteEmail, sendStatusUpdateEmail, sendRepairTrackingUpdateEmail } from "../utils/email";
 import { ENV } from "../config/env";
 import { createNotification } from "../utils/createNotification";
+import asyncHandler from "../utils/asyncHandler";
+import logger from "../utils/logger";
 
 /**
  * Archive (soft-delete) a lead
  */
-export const archiveLead = async (req: Request, res: Response) => {
+export const archiveLead = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
 
   const lead = await Lead.findById(id);
@@ -24,12 +26,12 @@ export const archiveLead = async (req: Request, res: Response) => {
   await lead.save();
 
   res.json({ message: "Lead archived successfully" });
-};
+});
 
 /**
  * Get paginated, non-archived leads with search and filtering
  */
-export const getAllLeads = async (req: Request, res: Response) => {
+export const getAllLeads = asyncHandler(async (req: Request, res: Response) => {
   // 1️⃣ Read pagination values from query string
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
@@ -116,9 +118,9 @@ export const getAllLeads = async (req: Request, res: Response) => {
       sortOrder: req.query.sortOrder || "desc",
     },
   });
-};
+});
 
-export const updateLeadStatus = async (req: Request, res: Response) => {
+export const updateLeadStatus = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { status } = req.body;
 
@@ -157,7 +159,7 @@ export const updateLeadStatus = async (req: Request, res: Response) => {
         oldStatus: formattedOldStatus,
         newStatus: formattedNewStatus
       }
-    ).catch(err => console.error('Failed to send status update email:', err));
+    ).catch(err => logger.error('Failed to send status update email:', err));
 
     // Send in-app notification if customer has an account
     if (lead.userId) {
@@ -178,18 +180,18 @@ export const updateLeadStatus = async (req: Request, res: Response) => {
           });
         }
       } catch (notifError) {
-        console.error("Failed to send lead notification:", notifError);
+        logger.error("Failed to send lead notification:", notifError);
       }
     }
   }
 
   res.json({ message: "Lead status updated", lead });
-};
+});
 
 /**
  * Update repair tracking information
  */
-export const updateRepairTracking = async (req: Request, res: Response) => {
+export const updateRepairTracking = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const {
     repairStage,
@@ -257,16 +259,16 @@ export const updateRepairTracking = async (req: Request, res: Response) => {
         estimatedCompletion: formattedCompletionDate,
         notes: latestNote
       }
-    ).catch(err => console.error('Failed to send repair tracking update email:', err));
+    ).catch(err => logger.error('Failed to send repair tracking update email:', err));
   }
 
   res.json({ message: "Repair tracking updated successfully", lead });
-};
+});
 
 /**
  * Add progress note to a lead
  */
-export const addProgressNote = async (req: Request, res: Response) => {
+export const addProgressNote = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { note, createdBy } = req.body;
 
@@ -293,12 +295,12 @@ export const addProgressNote = async (req: Request, res: Response) => {
   await lead.save();
 
   res.json({ message: "Progress note added successfully", lead });
-};
+});
 
 /**
  * Assign customer to a lead
  */
-export const assignCustomer = async (req: Request, res: Response) => {
+export const assignCustomer = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { userId } = req.body;
 
@@ -312,12 +314,12 @@ export const assignCustomer = async (req: Request, res: Response) => {
   await lead.save();
 
   res.json({ message: "Customer assigned successfully" });
-};
+});
 
 /**
  * Resend signup invitation email for a lead
  */
-export const resendSignupEmail = async (req: Request, res: Response) => {
+export const resendSignupEmail = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
 
   const lead = await Lead.findById(id);
@@ -346,4 +348,4 @@ export const resendSignupEmail = async (req: Request, res: Response) => {
   await sendSignupInviteEmail(user.email, user.name, user.signupToken, frontendUrl);
 
   res.json({ message: "Signup email resent successfully" });
-};
+});

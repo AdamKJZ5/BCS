@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { updateVehicle, deleteVehicle, setPrimaryVehicle, Vehicle } from "../api/vehicles";
+import { updateVehicle, deleteVehicle, setPrimaryVehicle, setSecondaryVehicle, Vehicle } from "../api/vehicles";
+import useModal from "../hooks/useModal";
 
 interface EditVehicleModalProps {
   vehicle: Vehicle;
@@ -9,7 +10,8 @@ interface EditVehicleModalProps {
   token: string;
 }
 
-const EditVehicleModal: React.FC<EditVehicleModalProps> = ({ vehicle, onClose, onUpdate, onDelete, token }) => {
+const EditVehicleModal: React.FC<EditVehicleModalProps> = ({ vehicle, onClose, onUpdate, onDelete, token: _token }) => {
+  const modal = useModal();
   const [formData, setFormData] = useState({
     make: vehicle.make,
     model: vehicle.model,
@@ -21,10 +23,9 @@ const EditVehicleModal: React.FC<EditVehicleModalProps> = ({ vehicle, onClose, o
     mileage: vehicle.mileage?.toString() || "",
     notes: vehicle.notes || "",
   });
-  const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [settingPrimary, setSettingPrimary] = useState(false);
-  const [error, setError] = useState("");
+  const [settingSecondary, setSettingSecondary] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -33,35 +34,34 @@ const EditVehicleModal: React.FC<EditVehicleModalProps> = ({ vehicle, onClose, o
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
 
     if (!formData.make || !formData.model || !formData.year) {
-      setError("Make, model, and year are required");
+      modal.setError("Make, model, and year are required");
       return;
     }
 
-    setLoading(true);
-    try {
-      const vehicleData: any = {
-        make: formData.make,
-        model: formData.model,
-        year: Number(formData.year),
-      };
+    const result = await modal.handleSubmit(
+      async () => {
+        const vehicleData: any = {
+          make: formData.make,
+          model: formData.model,
+          year: Number(formData.year),
+        };
 
-      if (formData.color) vehicleData.color = formData.color;
-      if (formData.vin) vehicleData.vin = formData.vin;
-      if (formData.licensePlate) vehicleData.licensePlate = formData.licensePlate;
-      if (formData.nickname) vehicleData.nickname = formData.nickname;
-      if (formData.mileage) vehicleData.mileage = Number(formData.mileage);
-      if (formData.notes) vehicleData.notes = formData.notes;
+        if (formData.color) vehicleData.color = formData.color;
+        if (formData.vin) vehicleData.vin = formData.vin;
+        if (formData.licensePlate) vehicleData.licensePlate = formData.licensePlate;
+        if (formData.nickname) vehicleData.nickname = formData.nickname;
+        if (formData.mileage) vehicleData.mileage = Number(formData.mileage);
+        if (formData.notes) vehicleData.notes = formData.notes;
 
-      const updatedVehicle = await updateVehicle(vehicle._id, vehicleData, token);
-      onUpdate(updatedVehicle);
-      onClose();
-    } catch (err: any) {
-      setError(err.message || "Failed to update vehicle");
-    } finally {
-      setLoading(false);
+        const updatedVehicle = await updateVehicle(vehicle._id, vehicleData);
+        return updatedVehicle;
+      }
+    );
+
+    if (result) {
+      onUpdate(result);
     }
   };
 
@@ -72,11 +72,11 @@ const EditVehicleModal: React.FC<EditVehicleModalProps> = ({ vehicle, onClose, o
 
     setDeleting(true);
     try {
-      await deleteVehicle(vehicle._id, token);
+      await deleteVehicle(vehicle._id);
       onDelete(vehicle._id);
       onClose();
     } catch (err: any) {
-      setError(err.message || "Failed to delete vehicle");
+      modal.setError(err.message || "Failed to delete vehicle");
     } finally {
       setDeleting(false);
     }
@@ -84,15 +84,29 @@ const EditVehicleModal: React.FC<EditVehicleModalProps> = ({ vehicle, onClose, o
 
   const handleSetPrimary = async () => {
     setSettingPrimary(true);
-    setError("");
+    modal.setError("");
     try {
-      const updatedVehicle = await setPrimaryVehicle(vehicle._id, token);
+      const updatedVehicle = await setPrimaryVehicle(vehicle._id);
       onUpdate(updatedVehicle);
       onClose();
     } catch (err: any) {
-      setError(err.message || "Failed to set as primary");
+      modal.setError(err.message || "Failed to set as primary");
     } finally {
       setSettingPrimary(false);
+    }
+  };
+
+  const handleSetSecondary = async () => {
+    setSettingSecondary(true);
+    modal.setError("");
+    try {
+      const updatedVehicle = await setSecondaryVehicle(vehicle._id);
+      onUpdate(updatedVehicle);
+      onClose();
+    } catch (err: any) {
+      modal.setError(err.message || "Failed to set as secondary");
+    } finally {
+      setSettingSecondary(false);
     }
   };
 
@@ -109,7 +123,7 @@ const EditVehicleModal: React.FC<EditVehicleModalProps> = ({ vehicle, onClose, o
           </button>
         </div>
 
-        {error && <div style={styles.error}>{error}</div>}
+        {modal.error && <div style={styles.error}>{modal.error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div style={styles.formGrid}>
@@ -237,7 +251,7 @@ const EditVehicleModal: React.FC<EditVehicleModalProps> = ({ vehicle, onClose, o
                 type="button"
                 onClick={handleDelete}
                 style={styles.deleteButton}
-                disabled={loading || deleting || settingPrimary}
+                disabled={modal.loading || deleting || settingPrimary || settingSecondary}
               >
                 {deleting ? "Deleting..." : "Delete"}
               </button>
@@ -246,9 +260,19 @@ const EditVehicleModal: React.FC<EditVehicleModalProps> = ({ vehicle, onClose, o
                   type="button"
                   onClick={handleSetPrimary}
                   style={styles.primaryButton}
-                  disabled={loading || deleting || settingPrimary}
+                  disabled={modal.loading || deleting || settingPrimary || settingSecondary}
                 >
                   {settingPrimary ? "Setting..." : "⭐ Set as Primary"}
+                </button>
+              )}
+              {!vehicle.isSecondary && !vehicle.isPrimary && (
+                <button
+                  type="button"
+                  onClick={handleSetSecondary}
+                  style={styles.secondaryButton}
+                  disabled={modal.loading || deleting || settingPrimary || settingSecondary}
+                >
+                  {settingSecondary ? "Setting..." : "⭐ Set as Secondary"}
                 </button>
               )}
             </div>
@@ -257,16 +281,16 @@ const EditVehicleModal: React.FC<EditVehicleModalProps> = ({ vehicle, onClose, o
                 type="button"
                 onClick={onClose}
                 style={styles.cancelButton}
-                disabled={loading || deleting || settingPrimary}
+                disabled={modal.loading || deleting || settingPrimary || settingSecondary}
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 style={styles.submitButton}
-                disabled={loading || deleting || settingPrimary}
+                disabled={modal.loading || deleting || settingPrimary || settingSecondary}
               >
-                {loading ? "Saving..." : "Save Changes"}
+                {modal.loading ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </div>
@@ -387,6 +411,16 @@ const styles = {
     padding: "0.75rem 1.5rem",
     backgroundColor: "#ffc107",
     color: "#333",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+    fontSize: "1rem",
+    fontWeight: "bold",
+  },
+  secondaryButton: {
+    padding: "0.75rem 1.5rem",
+    backgroundColor: "#17a2b8",
+    color: "#fff",
     border: "none",
     borderRadius: "4px",
     cursor: "pointer",

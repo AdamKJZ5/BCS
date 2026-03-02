@@ -10,6 +10,7 @@ interface IVehicle {
   licensePlate?: string;
   nickname?: string; // e.g., "My Red Car", "Work Truck"
   isPrimary: boolean;
+  isSecondary: boolean;
 
   // Service history
   lastServiceDate?: Date;
@@ -56,6 +57,10 @@ const vehicleSchema = new Schema<IVehicle>(
       type: Boolean,
       default: false,
     },
+    isSecondary: {
+      type: Boolean,
+      default: false,
+    },
     lastServiceDate: Date,
     mileage: Number,
     notes: String,
@@ -65,7 +70,7 @@ const vehicleSchema = new Schema<IVehicle>(
   }
 );
 
-// Ensure only one primary vehicle per user
+// Ensure only one primary and one secondary vehicle per user
 vehicleSchema.pre("save", async function () {
   if (this.isPrimary && this.isModified("isPrimary")) {
     // Unset isPrimary for other vehicles of the same user
@@ -73,6 +78,18 @@ vehicleSchema.pre("save", async function () {
       { userId: this.userId, _id: { $ne: this._id } },
       { isPrimary: false }
     );
+    // If setting a vehicle as primary, it can't be secondary
+    this.isSecondary = false;
+  }
+
+  if (this.isSecondary && this.isModified("isSecondary")) {
+    // Unset isSecondary for other vehicles of the same user
+    await Vehicle.updateMany(
+      { userId: this.userId, _id: { $ne: this._id } },
+      { isSecondary: false }
+    );
+    // If setting a vehicle as secondary, it can't be primary
+    this.isPrimary = false;
   }
 });
 

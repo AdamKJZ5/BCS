@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { createVehicle, Vehicle } from "../api/vehicles";
+import useModal from "../hooks/useModal";
 
 interface AddVehicleModalProps {
   onClose: () => void;
@@ -7,7 +8,8 @@ interface AddVehicleModalProps {
   token: string;
 }
 
-const AddVehicleModal: React.FC<AddVehicleModalProps> = ({ onClose, onSuccess, token }) => {
+const AddVehicleModal: React.FC<AddVehicleModalProps> = ({ onClose, onSuccess, token: _token }) => {
+  const modal = useModal();
   const [formData, setFormData] = useState({
     make: "",
     model: "",
@@ -19,8 +21,6 @@ const AddVehicleModal: React.FC<AddVehicleModalProps> = ({ onClose, onSuccess, t
     mileage: "",
     notes: "",
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -29,15 +29,13 @@ const AddVehicleModal: React.FC<AddVehicleModalProps> = ({ onClose, onSuccess, t
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
 
     if (!formData.make || !formData.model || !formData.year) {
-      setError("Make, model, and year are required");
+      modal.setError("Make, model, and year are required");
       return;
     }
 
-    setLoading(true);
-    try {
+    const result = await modal.handleSubmit(async () => {
       const vehicleData: any = {
         make: formData.make,
         model: formData.model,
@@ -51,13 +49,12 @@ const AddVehicleModal: React.FC<AddVehicleModalProps> = ({ onClose, onSuccess, t
       if (formData.mileage) vehicleData.mileage = Number(formData.mileage);
       if (formData.notes) vehicleData.notes = formData.notes;
 
-      const newVehicle = await createVehicle(vehicleData, token);
-      onSuccess(newVehicle);
-      onClose();
-    } catch (err: any) {
-      setError(err.message || "Failed to add vehicle");
-    } finally {
-      setLoading(false);
+      const newVehicle = await createVehicle(vehicleData);
+      return newVehicle;
+    });
+
+    if (result) {
+      onSuccess(result);
     }
   };
 
@@ -74,7 +71,7 @@ const AddVehicleModal: React.FC<AddVehicleModalProps> = ({ onClose, onSuccess, t
           </button>
         </div>
 
-        {error && <div style={styles.error}>{error}</div>}
+        {modal.error && <div style={styles.error}>{modal.error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div style={styles.formGrid}>
@@ -197,11 +194,11 @@ const AddVehicleModal: React.FC<AddVehicleModalProps> = ({ onClose, onSuccess, t
           </div>
 
           <div style={styles.footer}>
-            <button type="button" onClick={onClose} style={styles.cancelButton} disabled={loading}>
+            <button type="button" onClick={onClose} style={styles.cancelButton} disabled={modal.loading}>
               Cancel
             </button>
-            <button type="submit" style={styles.submitButton} disabled={loading}>
-              {loading ? "Adding..." : "Add Vehicle"}
+            <button type="submit" style={styles.submitButton} disabled={modal.loading}>
+              {modal.loading ? "Adding..." : "Add Vehicle"}
             </button>
           </div>
         </form>

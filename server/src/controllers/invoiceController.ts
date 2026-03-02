@@ -5,7 +5,7 @@ import User from "../models/User";
 import { AppError } from "../utils/AppError";
 import { createNotification, notifyAllAdmins } from "../utils/createNotification";
 import { generateInvoicePDF } from "../utils/pdfGenerator";
-import { loggers } from "../utils/logger";
+import logger, { loggers } from "../utils/logger";
 
 /**
  * Create a new invoice
@@ -366,7 +366,7 @@ export const sendInvoice = async (
         actionUrl: "/customer/dashboard",
       });
     } catch (notifError) {
-      console.error("Failed to send invoice notification:", notifError);
+      logger.error("Failed to send invoice notification:", notifError);
     }
 
     res.json({
@@ -452,7 +452,7 @@ export const recordPayment = async (
         actionUrl: "/customer/dashboard",
       });
     } catch (notifError) {
-      console.error("Failed to send payment notification to customer:", notifError);
+      logger.error("Failed to send payment notification to customer:", notifError);
     }
 
     // Notify admins of payment received
@@ -469,7 +469,7 @@ export const recordPayment = async (
         relatedInvoice: populatedInvoice._id,
       });
     } catch (notifError) {
-      console.error("Failed to send payment notification to admins:", notifError);
+      logger.error("Failed to send payment notification to admins:", notifError);
     }
 
     res.json({
@@ -689,9 +689,13 @@ export const downloadInvoicePDF = async (
   try {
     const { id } = req.params;
 
+    if (!id || typeof id !== 'string') {
+      throw new AppError("Invalid invoice ID", 400);
+    }
+
     // Fetch invoice with populated customer data
     const invoice = await Invoice.findById(id).populate('customerId', 'name email phone');
-    
+
     if (!invoice) {
       throw new AppError("Invoice not found", 404);
     }

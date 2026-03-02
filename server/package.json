@@ -5,12 +5,18 @@
   "main": "index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "tsc",
+    "dev:debug": "ts-node-dev --inspect --respawn --transpile-only src/server.ts",
+    "build": "npm run clean && tsc",
     "start": "node dist/server.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:verbose": "jest --verbose"
+    "test:verbose": "jest --verbose",
+    "admin:create": "node scripts/create-admin.js",
+    "db:backup": "./scripts/backup-mongodb.sh",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "rebuild": "npm run clean && npm run build"
   },
   "keywords": [],
   "author": "",

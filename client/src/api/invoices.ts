@@ -1,12 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
-const getAuthHeaders = () => {
-  const token = localStorage.getItem("token");
-  return {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json',
-  };
-};
+import apiClient from '../utils/apiClient';
 
 interface ILineItem {
   description: string;
@@ -101,152 +93,101 @@ interface RecordPaymentData {
 
 // Admin: Create a new invoice
 export async function createInvoice(data: CreateInvoiceData): Promise<Invoice> {
-  const res = await fetch(`${API_BASE}/api/invoices`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data),
-  });
-
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.message || 'Failed to create invoice');
+  try {
+    const response = await apiClient.post('/invoices', data);
+    return response.data.invoice;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to create invoice');
   }
-
-  const result = await res.json();
-  return result.invoice;
 }
 
 // Admin: Get all invoices with pagination
 export async function getAllInvoices(page: number = 1, limit: number = 20): Promise<InvoicesResponse> {
-  const res = await fetch(`${API_BASE}/api/invoices?page=${page}&limit=${limit}`, {
-    headers: getAuthHeaders(),
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to fetch invoices');
+  try {
+    const response = await apiClient.get(`/invoices?page=${page}&limit=${limit}`);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch invoices');
   }
-
-  return res.json();
 }
 
 // Admin: Get invoices for a specific lead
 export async function getInvoicesByLead(leadId: string): Promise<Invoice[]> {
-  const res = await fetch(`${API_BASE}/api/invoices/lead/${leadId}`, {
-    headers: getAuthHeaders(),
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to fetch lead invoices');
+  try {
+    const response = await apiClient.get(`/invoices/lead/${leadId}`);
+    return response.data.invoices;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch lead invoices');
   }
-
-  const result = await res.json();
-  return result.invoices;
 }
 
 // Admin: Get single invoice
 export async function getInvoice(id: string): Promise<Invoice> {
-  const res = await fetch(`${API_BASE}/api/invoices/${id}`, {
-    headers: getAuthHeaders(),
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to fetch invoice');
+  try {
+    const response = await apiClient.get(`/invoices/${id}`);
+    return response.data.invoice;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch invoice');
   }
-
-  const result = await res.json();
-  return result.invoice;
 }
 
 // Admin: Update invoice
 export async function updateInvoice(id: string, data: UpdateInvoiceData): Promise<Invoice> {
-  const res = await fetch(`${API_BASE}/api/invoices/${id}`, {
-    method: 'PATCH',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data),
-  });
-
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.message || 'Failed to update invoice');
+  try {
+    const response = await apiClient.patch(`/invoices/${id}`, data);
+    return response.data.invoice;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to update invoice');
   }
-
-  const result = await res.json();
-  return result.invoice;
 }
 
 // Admin: Send invoice to customer
 export async function sendInvoice(id: string): Promise<Invoice> {
-  const res = await fetch(`${API_BASE}/api/invoices/${id}/send`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-  });
-
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.message || 'Failed to send invoice');
+  try {
+    const response = await apiClient.post(`/invoices/${id}/send`);
+    return response.data.invoice;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to send invoice');
   }
-
-  const result = await res.json();
-  return result.invoice;
 }
 
 // Admin: Record payment (for manual payments: cash, check, crypto)
 export async function recordPayment(id: string, data: RecordPaymentData): Promise<Invoice> {
-  const res = await fetch(`${API_BASE}/api/invoices/${id}/payment`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data),
-  });
-
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.message || 'Failed to record payment');
+  try {
+    const response = await apiClient.post(`/invoices/${id}/payment`, data);
+    return response.data.invoice;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to record payment');
   }
-
-  const result = await res.json();
-  return result.invoice;
 }
 
 // Admin: Delete invoice (only drafts)
 export async function deleteInvoice(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/invoices/${id}`, {
-    method: 'DELETE',
-    headers: getAuthHeaders(),
-  });
-
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.message || 'Failed to delete invoice');
+  try {
+    await apiClient.delete(`/invoices/${id}`);
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to delete invoice');
   }
 }
 
 // Customer: Get my invoices
 export async function getMyInvoices(): Promise<Invoice[]> {
-  const res = await fetch(`${API_BASE}/api/invoices/my/invoices`, {
-    headers: getAuthHeaders(),
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to fetch invoices');
+  try {
+    const response = await apiClient.get('/invoices/my/invoices');
+    return response.data.invoices;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch invoices');
   }
-
-  const result = await res.json();
-  return result.invoices;
 }
 
 // Customer: Mark invoice as viewed
 export async function markInvoiceViewed(id: string): Promise<Invoice> {
-  const res = await fetch(`${API_BASE}/api/invoices/${id}/viewed`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to mark invoice as viewed');
+  try {
+    const response = await apiClient.post(`/invoices/${id}/viewed`);
+    return response.data.invoice;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to mark invoice as viewed');
   }
-
-  const result = await res.json();
-  return result.invoice;
 }
 
 export type { ILineItem, IPayment, CreateInvoiceData, UpdateInvoiceData, RecordPaymentData };

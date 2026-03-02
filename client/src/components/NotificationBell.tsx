@@ -50,7 +50,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ token }) => {
 
   const fetchUnreadCount = async () => {
     try {
-      const count = await getUnreadCount(token);
+      const count = await getUnreadCount();
       setUnreadCount(count);
     } catch (error) {
       console.error("Failed to fetch unread count:", error);
@@ -60,7 +60,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ token }) => {
   const fetchNotifications = async () => {
     setLoading(true);
     try {
-      const data = await getNotifications(token, { limit: 20 });
+      const data = await getNotifications({ limit: 20 });
       setNotifications(data.notifications);
       setUnreadCount(data.unreadCount);
     } catch (error) {
@@ -74,7 +74,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ token }) => {
     // Mark as read
     if (!notification.read) {
       try {
-        await markAsRead(notification._id, token);
+        await markAsRead(notification._id);
         setNotifications((prev) =>
           prev.map((n) => (n._id === notification._id ? { ...n, read: true } : n))
         );
@@ -93,7 +93,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ token }) => {
 
   const handleMarkAllRead = async () => {
     try {
-      await markAllAsRead(token);
+      await markAllAsRead();
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
       setUnreadCount(0);
     } catch (error) {
@@ -104,7 +104,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ token }) => {
   const handleDelete = async (notificationId: string, event: React.MouseEvent) => {
     event.stopPropagation();
     try {
-      await deleteNotification(notificationId, token);
+      await deleteNotification(notificationId);
       setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
       fetchUnreadCount();
     } catch (error) {
