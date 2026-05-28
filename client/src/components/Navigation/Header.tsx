@@ -28,7 +28,7 @@ const Header = () => {
           <Link to="/gallery" style={styles.navLink}>Gallery</Link>
           <Link to="/testimonials" style={styles.navLink}>Testimonials</Link>
           <Link to="/about" style={styles.navLink}>About</Link>
-          <Link to="/contact" style={styles.contactButton}>Get a Quote</Link>
+          <Link to="/contact" style={styles.contactButton}>Book Now / Get a Quote</Link>
 
           <div style={styles.divider}></div>
 
@@ -90,7 +90,7 @@ const styles = {
   navLink: {
     color: "#fff",
     textDecoration: "none",
-    fontSize: "1rem",
+    fontSize: "1.125rem",
     transition: "color 0.3s, transform 0.2s",
     display: "inline-block",
   },
@@ -100,7 +100,7 @@ const styles = {
     textDecoration: "none",
     padding: "0.5rem 1.5rem",
     borderRadius: "4px",
-    fontSize: "1rem",
+    fontSize: "1.125rem",
     fontWeight: "bold",
     transition: "all 0.3s",
     display: "inline-block",
@@ -108,7 +108,7 @@ const styles = {
   loginLink: {
     color: "#fff",
     textDecoration: "none",
-    fontSize: "1rem",
+    fontSize: "1.125rem",
     transition: "color 0.3s",
     display: "inline-block",
   },
@@ -118,7 +118,7 @@ const styles = {
     textDecoration: "none",
     padding: "0.5rem 1.5rem",
     borderRadius: "4px",
-    fontSize: "1rem",
+    fontSize: "1.125rem",
     fontWeight: "bold",
     border: "2px solid #FFD700",
     transition: "all 0.3s",
@@ -127,7 +127,7 @@ const styles = {
   dashboardLink: {
     color: "#FFD700",
     textDecoration: "none",
-    fontSize: "1rem",
+    fontSize: "1.125rem",
     fontWeight: "bold",
     transition: "color 0.3s",
     display: "inline-block",
@@ -138,7 +138,7 @@ const styles = {
     padding: "0.5rem 1rem",
     border: "1px solid #fff",
     borderRadius: "4px",
-    fontSize: "0.9rem",
+    fontSize: "1rem",
     cursor: "pointer",
     transition: "all 0.3s",
   },

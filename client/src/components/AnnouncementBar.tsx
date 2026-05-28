@@ -2,7 +2,6 @@ const AnnouncementBar = () => {
   const announcements = [
     "📞 Call us @ (425) 373-0308",
     "📍 Find us at 13434 SE 27th Pl, Bellevue WA 98005",
-    "🎉 Happy New Year!",
   ];
 
   return (
@@ -29,7 +28,7 @@ const styles = {
     color: "#0047AB",
     padding: "0.75rem 0",
     fontWeight: "bold",
-    fontSize: "0.95rem",
+    fontSize: "1.1rem",
     overflow: "hidden",
     borderBottom: "2px solid #0047AB",
     whiteSpace: "nowrap" as const,

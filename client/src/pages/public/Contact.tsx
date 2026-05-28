@@ -5,6 +5,13 @@ import DatePicker from "../../components/DatePicker";
 import TimeSlotSelector from "../../components/TimeSlotSelector";
 import { TimeSlot } from "../../api/appointments";
 import { useAuth } from "../../context/AuthContext";
+import BookingFlow, { BookingLocation } from "../../components/BookingFlow";
+
+const ACCENT = "#0047AB";
+const BRAND = "Bellevue Collision Services";
+const LOCATIONS: BookingLocation[] = [
+  { id: "main", name: "Bellevue", address: "13434 SE 27th Pl, Bellevue WA 98005", phone: "(425) 373-0308" },
+];
 
 const Contact = () => {
   const { user, isAuthenticated } = useAuth();
@@ -15,6 +22,7 @@ const Contact = () => {
     message: "",
     damageDescription: "",
   });
+  const [mode, setMode] = useState<"book" | "quote">("book");
   const [photos, setPhotos] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -187,11 +195,45 @@ const Contact = () => {
         <div style={styles.container}>
           <h1 style={styles.pageTitle}>Contact Us</h1>
           <p style={styles.pageSubtitle}>
-            Get a free quote or ask us any questions
+            {mode === "book" ? "Book an appointment or request a quote" : "Get a free quote or ask us any questions"}
           </p>
         </div>
       </div>
 
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "1.5rem 2rem 0" }}>
+        <div style={{ display: "inline-flex", gap: "0.25rem", background: "#f3f4f6", padding: "0.35rem", borderRadius: 10 }}>
+          <button
+            type="button"
+            onClick={() => setMode("book")}
+            style={{
+              padding: "0.65rem 1.2rem", border: "none", borderRadius: 8, fontWeight: 600, fontSize: "0.95rem", cursor: "pointer",
+              background: mode === "book" ? ACCENT : "transparent",
+              color: mode === "book" ? "#fff" : "#374151",
+            }}
+          >
+            📅 Book Appointment
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("quote")}
+            style={{
+              padding: "0.65rem 1.2rem", border: "none", borderRadius: 8, fontWeight: 600, fontSize: "0.95rem", cursor: "pointer",
+              background: mode === "quote" ? ACCENT : "transparent",
+              color: mode === "quote" ? "#fff" : "#374151",
+            }}
+          >
+            ✏️ Request a Quote
+          </button>
+        </div>
+      </div>
+
+      {mode === "book" && (
+        <div style={{ maxWidth: 900, margin: "0 auto", padding: "1.5rem 2rem 3rem" }}>
+          <BookingFlow accent={ACCENT} brand={BRAND} locations={LOCATIONS} />
+        </div>
+      )}
+
+      {mode === "quote" && (
       <div style={styles.container}>
         <div style={styles.contentGrid}>
           <div style={styles.formSection}>
@@ -450,6 +492,7 @@ const Contact = () => {
           </div>
         </div>
       </div>
+      )}
     </PublicLayout>
   );
 };

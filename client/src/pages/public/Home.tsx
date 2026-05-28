@@ -21,7 +21,7 @@ const Home = () => {
           </p>
           <div style={styles.heroButtons}>
             <Link to="/contact" style={styles.primaryButton}>
-              Get a Free Quote
+              Book Now / Get a Quote
             </Link>
             <Link to="/services" style={styles.secondaryButton}>
               View Our Services
